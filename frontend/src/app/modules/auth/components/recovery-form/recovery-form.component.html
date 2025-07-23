@@ -1,0 +1,81 @@
+<h1 class="text-center font-bold py-2 text-gray-700">Establezca su nueva contraseña</h1>
+<form [formGroup]="form" novalidate class="space-y-4" (ngSubmit)="recovery()">
+  <div>
+    <div class="relative">
+      <input
+        formControlName="newPassword"
+        placeholder="Enter new password"
+        [type]="showPassword ? 'text' : 'password'"
+        class="w-full rounded bg-gray-100 border-gray-300 border-2"
+      />
+      <button
+        type="button"
+        class="p-2 absolute right-2"
+        (click)="showPassword = !showPassword"
+      >
+        <fa-icon [icon]="showPassword ? faEye : faEyeSlash"></fa-icon>
+      </button>
+    </div>
+    <div
+      *ngIf="form.controls.newPassword.touched && form.controls.newPassword.invalid"
+    >
+      <p
+        *ngIf="form.controls.newPassword.hasError('required')"
+        class="font-medium text-red-500 text-xs mt-1 ml-1"
+      >
+        Este campo es obligatorio
+      </p>
+      <p
+        *ngIf="form.controls.newPassword.hasError('minlength')"
+        class="font-medium text-red-500 text-xs mt-1 ml-1"
+      >
+        Este campo debe tener más de 6 caracteres.
+      </p>
+    </div>
+  </div>
+  <div>
+    <div class="relative">
+      <input
+        formControlName="confirmPassword"
+        placeholder="Confirm new password"
+        type="password"
+        class="w-full rounded bg-gray-100 border-gray-300 border-2"
+      />
+    </div>
+    <div
+      *ngIf="
+        form.controls.confirmPassword.touched &&
+        form.controls.confirmPassword.invalid
+      "
+    >
+      <p
+        *ngIf="form.controls.confirmPassword.hasError('required')"
+        class="font-medium text-red-500 text-xs mt-1 ml-1"
+      >
+        Este campo es obligatorio
+      </p>
+      <p
+        *ngIf="form.controls.confirmPassword.hasError('minlength')"
+        class="font-medium text-red-500 text-xs mt-1 ml-1"
+      >
+        Este campo debe tener más de 6 caracteres.
+      </p>
+    </div>
+  </div>
+  <div *ngIf="form.controls.confirmPassword.touched">
+    <p
+      *ngIf="form.hasError('mismatch')"
+      class="font-medium text-red-500 text-xs mt-1 ml-1"
+    >
+      Las contraseñas no son las mismas
+    </p>
+  </div>
+  <div>
+    <app-btn
+      typeBtn="submit"
+      color="success"
+      [loading]="status === 'loading'"
+      >Recuperación</app-btn
+    >
+  </div>
+</form>

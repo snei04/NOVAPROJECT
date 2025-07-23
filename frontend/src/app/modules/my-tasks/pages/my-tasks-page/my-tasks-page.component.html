@@ -1,0 +1,18 @@
+<div class="container mx-auto mt-10 p-4">
+  <h1 class="text-2xl font-bold mb-6">Mis Tareas Asignadas</h1>
+  <div *ngIf="myTasks.length > 0; else noTasks" class="space-y-4">
+    <div *ngFor="let task of myTasks" class="p-4 rounded-lg shadow border-l-4" [style.border-color]="task.backgroundColor">
+      <h2 class="font-bold">{{ task.card_title }}</h2>
+      <p class="text-sm text-gray-600">
+        En el tablero: <a [routerLink]="['/app/boards', task.board_id]" class="text-blue-600 hover:underline">{{ task.board_title }}</a>
+        (Lista: {{ task.list_title }})
+      </p>
+      <p *ngIf="task.due_date" class="text-xs text-gray-500 mt-2">
+        Vence: {{ task.due_date | date:'medium' }}
+      </p>
+    </div>
+  </div>
+  <ng-template #noTasks>
+    <p class="text-gray-500">¡Felicidades! No tienes ninguna tarea asignada.</p>
+  </ng-template>
+</div>

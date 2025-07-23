@@ -1,0 +1,171 @@
+// src/controllers/board.controller.js
+import pool from '../config/database.js';
+import BoardService from '../services/board.service.js'; // <-- 1. Importa el servicio
+
+export const createBoard = async (req, res) => {
+  try {
+    const { title, backgroundColor } = req.body;
+    const userId = req.user.id;
+
+    if (!title || !backgroundColor) {
+      return res.status(400).json({ message: 'El título y el color de fondo son requeridos' });
+    }
+
+    // 2. El controlador ahora solo llama al servicio
+    const newBoard = await BoardService.createBoard({ title, backgroundColor, userId });
+
+    res.status(201).json(newBoard);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error interno del servidor al crear el tablero' });
+  }
+};
+
+// Obtener todos los tableros del usuario logueado (Ruta Protegida)
+export const getMyBoards = async (req, res) => {
+  const userId = req.user.id; // Obtenemos el ID del usuario del token
+
+  try {
+    const [boards] = await pool.query('SELECT * FROM boards WHERE user_id = ?', [userId]);
+    res.status(200).json(boards);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+export const getBoard = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+    try {
+        const [permissionRows] = await pool.query(`SELECT b.id FROM boards b LEFT JOIN board_members bm ON b.id = bm.board_id WHERE b.id = ? AND (b.user_id = ? OR bm.user_id = ?) LIMIT 1`, [id, userId, userId]);
+        if (permissionRows.length === 0) {
+            return res.status(404).json({ message: 'Tablero no encontrado o no tienes permiso para verlo.' });
+        }
+        
+        const [boardRows] = await pool.query('SELECT * FROM boards WHERE id = ?', [id]);
+        const board = boardRows[0];
+        
+        const [lists] = await pool.query('SELECT * FROM lists WHERE board_id = ? ORDER BY position', [id]);
+        
+        // Consulta explícita de todas las columnas de la tarjeta
+        const [cards] = await pool.query('SELECT id, title, description, position, due_date, list_id FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?) ORDER BY position', [id]);
+        
+        const [members] = await pool.query('SELECT u.id, u.nombre AS name, u.email, u.avatar FROM usuarios u INNER JOIN board_members bm ON u.id = bm.user_id WHERE bm.board_id = ?', [id]);
+        const [labels] = await pool.query('SELECT l.id, l.name, l.color, cl.card_id FROM labels l INNER JOIN card_labels cl ON l.id = cl.label_id WHERE cl.card_id IN (SELECT id FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?))', [id]);
+        const [assignees] = await pool.query('SELECT u.id, u.nombre as name, u.email, u.avatar, ca.card_id FROM usuarios u INNER JOIN card_assignees ca ON u.id = ca.user_id WHERE ca.card_id IN (SELECT id FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?))', [id]);
+
+     const cardsWithDetails = cards.map(card => ({
+      id: card.id,
+      title: card.title,
+      description: card.description,
+      position: card.position,
+      dueDate: card.due_date, // Aquí hacemos la traducción
+      list_id: card.list_id,
+      labels: labels.filter(label => label.card_id === card.id),
+      assignees: assignees.filter(assignee => assignee.card_id === card.id)
+    }));
+    const [userRoleRows] = await pool.query(
+      'SELECT role FROM board_members WHERE board_id = ? AND user_id = ?',
+      [id, userId]
+    );
+        if (userRoleRows.length > 0) {
+      board.userRole = userRoleRows[0].role;
+    } else if (board.user_id === userId) {
+      board.userRole = 'owner';
+    }
+        board.lists = lists.map(list => ({
+            ...list,
+            cards: cardsWithDetails.filter(card => card.list_id === list.id)
+        }));
+        board.members = members;
+
+        res.status(200).json(board);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+//Borrar un tablero
+export const deleteBoard = async (req, res) => {
+  const { id } = req.params; // ID del tablero a eliminar
+  const userId = req.user.id;
+
+    try {
+    // Primero, verificamos que el tablero existe y pertenece al usuario
+    const [boardPermissionRows] = await pool.query(`
+      SELECT b.id
+      FROM boards b
+      LEFT JOIN board_members bm ON b.id = bm.board_id
+      WHERE b.id = ? AND (b.user_id = ? OR bm.user_id = ?)
+      LIMIT 1
+    `, [id, userId, userId]);
+
+    if (boardPermissionRows.length === 0) {
+      return res.status(404).json({ message: 'Tablero no encontrado o no tienes permiso para verlo.' });
+    }
+
+    // Si todo está bien, procedemos a eliminarlo
+    await pool.query('DELETE FROM boards WHERE id = ?', [id]);
+
+    // Gracias a "ON DELETE CASCADE" que definimos en la base de datos,
+    // todas las listas y tarjetas asociadas a este tablero se eliminarán automáticamente.
+
+    res.status(200).json({ message: 'Tablero eliminado exitosamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+export const addMember = async (req, res) => {
+  const { boardId } = req.params; // ID del tablero desde la URL
+  const { email } = req.body;      // Email del usuario a invitar
+  const ownerId = req.user.id;     // ID del dueño del tablero (quien invita)
+
+  if (!email) {
+    return res.status(400).json({ message: 'El email del usuario a invitar es requerido' });
+  }
+
+  try {
+    // 1. Verificar que quien invita es el dueño del tablero
+    const [boardRows] = await pool.query('SELECT user_id FROM boards WHERE id = ?', [boardId]);
+    if (boardRows.length === 0 || boardRows[0].user_id !== ownerId) {
+      return res.status(403).json({ message: 'No autorizado para invitar miembros a este tablero' });
+    }
+
+    // 2. Encontrar al usuario invitado por su email
+    const [userToInviteRows] = await pool.query('SELECT id FROM usuarios WHERE email = ?', [email]);
+    if (userToInviteRows.length === 0) {
+      return res.status(404).json({ message: `No se encontró un usuario con el email: ${email}` });
+    }
+    const userToInviteId = userToInviteRows[0].id;
+
+    // 3. Insertar la nueva relación en la tabla 'board_members'
+    await pool.query('INSERT INTO board_members (board_id, user_id) VALUES (?, ?)', [boardId, userToInviteId]);
+
+    res.status(201).json({ message: 'Usuario añadido al tablero exitosamente' });
+  } catch (error) {
+    // Manejar el caso de que el usuario ya sea miembro (error de llave primaria duplicada)
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: 'El usuario ya es miembro de este tablero' });
+    }
+    console.error(error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+export const getBoardActivity = async (req, res) => {
+    const { boardId } = req.params;
+    try {
+        const [activities] = await pool.query(`
+            SELECT a.description, a.created_at, u.nombre as userName, u.avatar 
+            FROM activities a
+            JOIN usuarios u ON a.user_id = u.id
+            WHERE a.board_id = ?
+            ORDER BY a.created_at DESC
+            LIMIT 20
+        `, [boardId]);
+        res.status(200).json(activities);
+    } catch (error) {
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};

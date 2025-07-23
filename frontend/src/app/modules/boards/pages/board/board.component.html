@@ -1,0 +1,111 @@
+<div class="w-full h-full px-4 pb-4" [ngClass]="colors">
+  <div class="flex flex-col h-full">
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-bold text-white my-4">{{ board?.title }}</h2>
+      
+        <div *ngIf="board?.userRole === 'owner'" class="flex items-center space-x-4">
+        <form [formGroup]="inviteMemberForm" (ngSubmit)="inviteMember()" class="flex items-center space-x-2">
+          <input type="email" formControlName="email" placeholder="Email del miembro" class="rounded px-2 py-1 text-sm text-black">
+          <app-btn typeBtn="submit" color="primary" [loading]="isInvitingMember">Invitar</app-btn>
+        </form>
+        
+        <div class="flex -space-x-4">
+          <img *ngFor="let member of board?.members" [src]="member.avatar" [alt]="member.name" class="w-10 h-10 border-2 border-white rounded-full" [title]="member.name">
+        </div>
+      </div>
+    </div>
+
+    <div class="flex grow items-start w-full h-full overflow-x-scroll" cdkDropListGroup>
+      <div class="rounded bg-gray-200 w-72 p-2 mr-3 shrink-0" *ngFor="let list of board?.lists">
+        <div class="flex justify-between py-1">
+          <h3 class="text-sm font-bold ml-2">{{ list.title }}</h3>
+        </div>
+
+        <div class="text-sm mt-2 min-h-[2.5rem]" [id]="list.id" cdkDropList (cdkDropListDropped)="drop($event)" [cdkDropListData]="list.cards">
+          
+          <div
+            (click)="openDialog(card)"
+            *ngFor="let card of list.cards"
+            cdkDrag
+            class="bg-white shadow p-2 rounded mt-2 border-b border-x-gray-300 cursor-pointer hover:bg-gray-400"
+          >
+            <div class="flex flex-wrap gap-1 mb-2">
+              <span
+                *ngFor="let label of card.labels"
+                class="px-2 py-1 text-xs font-bold rounded"
+                [ngClass]="{
+                  'bg-red-200 text-red-800': label.color === 'red',
+                  'bg-green-200 text-green-800': label.color === 'green',
+                  'bg-blue-200 text-blue-800': label.color === 'blue',
+                  'bg-yellow-200 text-yellow-800': label.color === 'yellow',
+                  'bg-purple-200 text-purple-800': label.color === 'purple'
+                }"
+              >
+                {{ label.name }}
+              </span>
+            </div>
+
+            <p class="mb-2">{{ card.title }}</p>
+
+            <div *ngIf="card.assignees.length > 0" class="flex justify-end -space-x-2">
+              <img
+                *ngFor="let assignee of card.assignees"
+                [src]="assignee.avatar"
+                [alt]="assignee.name"
+                [title]="assignee.name"
+                class="w-7 h-7 border-2 border-white rounded-full"
+              >
+            </div>
+            <div *ngIf="card.dueDate" class="flex items-center gap-2 mt-2 text-xs text-gray-600">
+            <fa-icon [icon]="faClock"></fa-icon> 
+            <span>{{ card.dueDate | date:'MMM d, h:mm a' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <app-btn *ngIf="!list.showCardForm && board?.userRole === 'owner'" color="light" (click)="openFormCard(list)">
+          Añadir una tarjeta
+          </app-btn>
+        <div class="w-full" *ngIf="list.showCardForm">
+            <textarea [formControl]="inputCard" class="w-full"></textarea>
+            <div class="flex space-x-2 justify-between">
+              <app-btn color="success" (click)="createCard(list)">Crear</app-btn>
+              <app-btn color="light" (click)="closeCardForm(list)">Cerrar</app-btn>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shrink-0">
+        <app-btn *ngIf="!showListForm" color="light" (click)="showListForm = !showListForm">Agregar otra lista</app-btn>
+        <div class="w-full" *ngIf="showListForm">
+          <textarea [formControl]="inputList" class="w-full"></textarea>
+          <div class="flex space-x-2 justify-between">
+            <app-btn color="success" (click)="addList()">Crear</app-btn>
+            <app-btn color="light" (click)="showListForm = !showListForm">Cerrar</app-btn>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mt-8 p-4 bg-white rounded shadow-md container mx-auto">
+  <h3 class="text-lg font-semibold mb-4">Actividad Reciente</h3>
+  <ul class="space-y-3">
+    <li *ngFor="let activity of activities" class="flex items-center space-x-3 text-sm">
+      <img [src]="activity.avatar" [alt]="activity.userName" class="w-8 h-8 rounded-full">
+      <div>
+        <p>
+          <span class="font-bold">{{ activity.userName }}</span>
+          {{ activity.description.replace(activity.userName, '') }}
+        </p>
+        <p class="text-xs text-gray-500">{{ activity.created_at | date:'short' }}</p>
+      </div>
+    </li>
+    <li *ngIf="activities.length === 0">
+      <p class="text-sm text-gray-500">No hay actividad reciente en este tablero.</p>
+    </li>
+  </ul>
+</div>
