@@ -1,6 +1,7 @@
 // src/controllers/auth.controller.js
 import AuthService from '../services/auth.service.js';
 import pool from '../config/database.js';
+import { sendMail } from '../services/mail.service.js';
 
 export const register = async (req, res) => {
   try {
@@ -35,6 +36,7 @@ export const login = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
+
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -43,11 +45,23 @@ export const forgotPassword = async (req, res) => {
     if (userRows.length > 0) {
       const user = userRows[0];
       const resetToken = AuthService.createResetToken(user);
-      console.log(`Enlace de recuperación (simulado): http://localhost:4200/recovery?token=${resetToken}`);
+      
+      // --- 2. Usa el servicio de correo ---
+      const resetLink = `http://localhost:4200/recovery?token=${resetToken}`;
+      const emailHtml = `
+        <h1>Restablecimiento de Contraseña</h1>
+        <p>Hola ${user.nombre},</p>
+        <p>Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace para continuar:</p>
+        <a href="${resetLink}" style="padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Restablecer Contraseña</a>
+        <p>Si no solicitaste esto, por favor ignora este correo.</p>
+      `;
+      
+      await sendMail(user.email, 'Restablecimiento de Contraseña para Novaproject', emailHtml);
     }
 
     res.status(200).json({ message: 'Si el correo existe, se ha enviado un enlace de recuperación.' });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };

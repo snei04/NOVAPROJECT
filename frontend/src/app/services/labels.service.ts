@@ -11,12 +11,12 @@ export class LabelsService {
   apiUrl = environment.API_URL;
 
   constructor(private http: HttpClient) { }
-  getLabels(boardId: string) {
-    // La URL correcta ahora empieza con /labels/board/ en lugar de /boards/.../labels
-    return this.http.get<Label[]>(`${this.apiUrl}/api/v1/labels/board/${boardId}`, {
-      context: checkToken(),
-    });
-  }
+ getLabels(boardId: string) {
+  // La URL correcta debe coincidir con la ruta del backend: /boards/:boardId/labels
+  return this.http.get<Label[]>(`${this.apiUrl}/api/v1/boards/${boardId}/labels`, {
+    context: checkToken(),
+  });
+}
 
   assignLabel(cardId: string, labelId: number) {
     return this.http.post(`${this.apiUrl}/api/v1/labels/assign`, { cardId, labelId }, {

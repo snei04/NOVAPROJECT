@@ -123,11 +123,8 @@ export class TodoDialogComponent implements OnInit {
       this.labelsService.create(name, color, this.boardId).subscribe(() => {
         this.toastr.success('Etiqueta creada exitosamente');
         
-        // --- INICIO DE LA SOLUCIÓN ---
-        // En lugar de actualizar el array aquí, cerramos el diálogo
-        // y le pasamos 'true' como señal de que algo cambió.
+        
         this.dialogRef.close(true); 
-        // --- FIN DE LA SOLUCIÓN ---
       });
     }
   }
