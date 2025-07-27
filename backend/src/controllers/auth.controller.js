@@ -3,6 +3,7 @@ import AuthService from '../services/auth.service.js';
 import pool from '../config/database.js';
 import { sendMail } from '../services/mail.service.js';
 
+
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -11,6 +12,8 @@ export const register = async (req, res) => {
     }
     
     const newUser = await AuthService.registerUser({ name, email, password });
+    const emailHtml = `<h1>¡Bienvenido a Novaproject, ${name}!</h1><p>Tu cuenta ha sido creada exitosamente. ¡Esperamos que disfrutes de novaproject!</p>`;
+    await sendMail(email, '¡Bienvenido a Novaproject!', emailHtml);
     res.status(201).json({ message: 'Usuario registrado exitosamente', userId: newUser.userId });
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') {

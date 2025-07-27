@@ -1,6 +1,7 @@
 // src/controllers/board.controller.js
 import pool from '../config/database.js';
 import BoardService from '../services/board.service.js'; // <-- 1. Importa el servicio
+import { sendMail } from '../services/mail.service.js';
 
 export const createBoard = async (req, res) => {
   try {
@@ -118,34 +119,43 @@ export const deleteBoard = async (req, res) => {
   }
 };
 export const addMember = async (req, res) => {
-  const { boardId } = req.params; // ID del tablero desde la URL
-  const { email } = req.body;      // Email del usuario a invitar
-  const ownerId = req.user.id;     // ID del dueño del tablero (quien invita)
+  const { boardId } = req.params;
+  const { email } = req.body;
+  const owner = req.user; // El usuario que invita (viene del middleware 'protect')
 
   if (!email) {
     return res.status(400).json({ message: 'El email del usuario a invitar es requerido' });
   }
 
   try {
-    // 1. Verificar que quien invita es el dueño del tablero
-    const [boardRows] = await pool.query('SELECT user_id FROM boards WHERE id = ?', [boardId]);
-    if (boardRows.length === 0 || boardRows[0].user_id !== ownerId) {
+    // 2. Modificamos la consulta para obtener también el título del tablero
+    const [boardRows] = await pool.query('SELECT user_id, title FROM boards WHERE id = ?', [boardId]);
+    if (boardRows.length === 0 || boardRows[0].user_id !== owner.id) {
       return res.status(403).json({ message: 'No autorizado para invitar miembros a este tablero' });
     }
+    const boardTitle = boardRows[0].title; // Guardamos el título
 
-    // 2. Encontrar al usuario invitado por su email
     const [userToInviteRows] = await pool.query('SELECT id FROM usuarios WHERE email = ?', [email]);
     if (userToInviteRows.length === 0) {
       return res.status(404).json({ message: `No se encontró un usuario con el email: ${email}` });
     }
     const userToInviteId = userToInviteRows[0].id;
 
-    // 3. Insertar la nueva relación en la tabla 'board_members'
-    await pool.query('INSERT INTO board_members (board_id, user_id) VALUES (?, ?)', [boardId, userToInviteId]);
+    await pool.query('INSERT INTO board_members (board_id, user_id, role) VALUES (?, ?, ?)', [boardId, userToInviteId, 'member']);
+
+    // --- 3. Lógica para enviar el correo de invitación ---
+    const inviteLink = `http://localhost:4200/app/boards/${boardId}`;
+    const emailHtml = `
+      <h1>¡Has sido invitado a un tablero!</h1>
+      <p>Hola,</p>
+      <p>El usuario <b>${owner.name}</b> te ha invitado a colaborar en el tablero "<b>${boardTitle}</b>" en Novaproject.</p>
+      <a href="${inviteLink}" style="padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Ver el tablero</a>
+    `;
+    await sendMail(email, `Invitación para colaborar en "${boardTitle}"`, emailHtml);
+    // --- Fin del envío de correo ---
 
     res.status(201).json({ message: 'Usuario añadido al tablero exitosamente' });
   } catch (error) {
-    // Manejar el caso de que el usuario ya sea miembro (error de llave primaria duplicada)
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ message: 'El usuario ya es miembro de este tablero' });
     }
@@ -153,6 +163,7 @@ export const addMember = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
+
 export const getBoardActivity = async (req, res) => {
     const { boardId } = req.params;
     try {

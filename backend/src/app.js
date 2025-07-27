@@ -8,6 +8,7 @@ import cardRoutes from './routes/card.routes.js';
 import meRoutes from './routes/me.routes.js';
 import labelRoutes from './routes/label.routes.js'; 
 import cors from 'cors';
+import './scheduler.js';
 
 // Cargamos las variables de entorno
 dotenv.config();

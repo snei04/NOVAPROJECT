@@ -1,5 +1,6 @@
 import pool from '../config/database.js';
 import CardService from '../services/card.service.js';
+import { sendMail } from '../services/mail.service.js';
 
 // --- CREAR TARJETA (Solo para Dueños) ---
 export const createCard = async (req, res) => {
@@ -31,6 +32,7 @@ export const createCard = async (req, res) => {
 
 // --- ACTUALIZAR TARJETA (LÓGICA DE PERMISOS FINAL Y CORRECTA) ---
 export const updateCard = async (req, res) => {
+  console.log('--- 1. Controlador updateCard INICIADO ---');
   const { id } = req.params; // ID de la tarjeta
   const userId = req.user.id; // ID del usuario que edita
   const updates = req.body;
@@ -73,7 +75,7 @@ export const updateCard = async (req, res) => {
     }
     
     // 4. Si es el dueño (o un miembro con permiso para mover), llamamos al servicio para actualizar.
-    await CardService.updateCard(id, updates);
+    await CardService.updateCard(id, updates, req.user);
     res.status(200).json({ message: 'Tarjeta actualizada exitosamente' });
   } catch (error) {
     console.error('Error al actualizar la tarjeta:', error);
@@ -111,6 +113,8 @@ export const deleteCard = async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 };
+
+// src/controllers/card.controller.js (Versión Original)
 
 export const assignMemberToCard = async (req, res) => {
   const { cardId, userIdToAssign } = req.body;
@@ -153,6 +157,8 @@ try {
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
+
+
 // Quitar un miembro de una tarjeta
 export const removeMemberFromCard = async (req, res) => {
     const { cardId, userIdToRemove } = req.params;

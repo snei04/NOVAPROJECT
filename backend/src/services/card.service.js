@@ -12,7 +12,11 @@ class CardService {
     return { id: result.insertId, title, list_id: listId, position, description, due_date: mysqlDate };
   }
 
-  async updateCard(cardId, updates) {
+ async updateCard(cardId, updates, user) {
+  try {
+    console.log('--- 2. Servicio updateCard INICIADO ---');
+    
+    // --- 1. Lógica para actualizar la tarjeta (tu código está bien aquí) ---
     const fieldsToUpdate = [];
     const values = [];
 
@@ -31,23 +35,44 @@ class CardService {
       }
     }
 
-    if (fieldsToUpdate.length === 0) {
-      throw new Error('No hay campos para actualizar');
+    if (fieldsToUpdate.length > 0) {
+      values.push(cardId);
+      const query = `UPDATE cards SET ${fieldsToUpdate.join(', ')} WHERE id = ?`;
+      await pool.query(query, values);
     }
 
-    values.push(cardId);
-    const query = `UPDATE cards SET ${fieldsToUpdate.join(', ')} WHERE id = ?`;
-    await pool.query(query, values);
+    // --- 2. Lógica para registrar la actividad (sección corregida) ---
+    console.log('--- 3. Preparando datos para el log de actividad ---');
 
-    // Log de actividad si se mueve la tarjeta
+    // Obtenemos los datos necesarios para la descripción del log
+    const [cardDataRows] = await pool.query('SELECT c.title, l.board_id FROM cards c JOIN lists l ON c.list_id = l.id WHERE c.id = ?', [cardId]);
+    if (cardDataRows.length === 0) {
+      // Si no encontramos la tarjeta, no podemos registrar la actividad
+      return; 
+    }
+    const cardData = cardDataRows[0];
+    const userName = user.name || 'Un usuario'; // Definimos userName aquí
+    
+    // Creamos la descripción
+    let activityDescription = `${userName} actualizó la tarjeta "${cardData.title}"`;
     if (updates.listId) {
-        const [cardData] = await pool.query('SELECT title, l.board_id FROM cards c JOIN lists l ON c.list_id = l.id WHERE c.id = ?', [cardId]);
-        const [listData] = await pool.query('SELECT title FROM lists WHERE id = ?', [updates.listId]);
-        const logDescription = `movido la tarjeta "${cardData[0].title}" a la lista "${listData[0].title}"`;
-        // Nota: necesitaríamos el nombre y el ID del usuario aquí para un log completo.
-        // Esto muestra una limitación y un área de mejora futura.
+      activityDescription = `${userName} movió la tarjeta "${cardData.title}"`;
     }
+    
+    // Llamamos al servicio de actividad
+    console.log('--- 4. Llamando a ActivityService.logActivity ---');
+    await ActivityService.logActivity({
+      description: activityDescription,
+      boardId: cardData.board_id,
+      userId: user.id
+    });
+
+  } catch (error) {
+    // Este catch ahora maneja cualquier error que ocurra en la función
+    console.error('Error en la función updateCard:', error);
+    throw error; // Lanzamos el error para que el controlador lo atrape
   }
 }
+  }
 
 export default new CardService();
