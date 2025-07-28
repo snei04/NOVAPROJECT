@@ -2,6 +2,7 @@
 import ListService from '../services/list.service.js';
 import pool from '../config/database.js';
 
+
 export const createList = async (req, res) => {
   try {
     const { boardId } = req.body;
@@ -19,6 +20,20 @@ export const createList = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
+
+export const updateList = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title } = req.body; // Para renombrar la lista
+
+    await ListService.updateList(id, { title });
+    res.status(200).json({ message: 'Lista actualizada exitosamente' });
+  } catch (error) {
+    console.error('Error al actualizar la lista:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
 
 export const deleteList = async (req, res) => {
   const { id } = req.params; // ID de la lista a eliminar

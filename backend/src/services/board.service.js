@@ -82,6 +82,26 @@ class BoardService {
     return board;
   }
 
+  async updateBoard(boardId, updates) {
+    const { title, backgroundColor } = updates;
+    const fields = [];
+    const values = [];
+
+    if (title) {
+      fields.push('title = ?');
+      values.push(title);
+    }
+    if (backgroundColor) {
+      fields.push('backgroundColor = ?');
+      values.push(backgroundColor);
+    }
+
+    if (fields.length === 0) return; // No hay nada que actualizar
+
+    values.push(boardId);
+    const query = `UPDATE boards SET ${fields.join(', ')} WHERE id = ?`;
+    await pool.query(query, values);
+  }
   /**
    * Añade un nuevo miembro a un tablero.
    */

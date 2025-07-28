@@ -1,7 +1,10 @@
 // src/routes/list.routes.js
 import { Router } from 'express';
-import { createList, deleteList  } from '../controllers/list.controller.js';
+import { createList, updateList, deleteList } from '../controllers/list.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
+import { isBoardOwner } from '../middleware/boardAuth.middleware.js';
+
+
 
 const router = Router();
 
@@ -10,7 +13,8 @@ router.use(protect);
 
 router.route('/')
   .post(createList);
-router.route('/:id')
-  .delete(deleteList);
+router.route('/:id').put(isBoardOwner, updateList).delete(isBoardOwner, deleteList);
+
+  
 
 export default router;

@@ -4,6 +4,7 @@ import {
     getMyBoards,
     getBoard,
     deleteBoard,
+    updateBoard,
     addMember,
     getBoardActivity
 } from '../controllers/board.controller.js';
@@ -21,10 +22,11 @@ router.route('/')
 // --- ESTA ES LA PARTE IMPORTANTE ---
 // Rutas que operan sobre un tablero específico
 router.route('/:id')
-  .get(protect, isBoardMember, getBoard) // <-- GET /boards/:id usa getBoard
-  .delete(protect, isBoardMember, isBoardOwner, deleteBoard);
+  .get(protect, getBoard)         // <-- Para VER, solo se necesita ser miembro
+  .put(protect, isBoardOwner, updateBoard)       // <-- Para EDITAR, se necesita ser dueño
+  .delete(protect, isBoardOwner, deleteBoard);
 
-router.post('/:boardId/members', protect, isBoardMember, isBoardOwner, addMember);
+router.post('/:boardId/members', protect, isBoardOwner, addMember);
 
 // Rutas para obtener datos RELACIONADOS a un tablero
 router.get('/:boardId/activity', protect, isBoardMember, getBoardActivity);

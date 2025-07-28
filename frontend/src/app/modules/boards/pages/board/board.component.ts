@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { Dialog } from '@angular/cdk/dialog';
@@ -51,6 +51,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     private cardsService: CardsService,
     private listsService: ListsService,
     private formBuilder: FormBuilder,
+    private router: Router,
     private toastr: ToastrService
   ) {}
 
@@ -150,6 +151,55 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   closeCardForm(list: List) {
     list.showCardForm = false;
+  }
+
+ renameBoard(board: Board) {
+    const newTitle = prompt('Nuevo nombre del tablero:', board.title);
+    if (newTitle && newTitle !== board.title) {
+      this.boardsService.update(board.id, { title: newTitle })
+        .subscribe(() => {
+          if (this.board) {
+            this.board.title = newTitle;
+          }
+          this.toastr.success('Tablero renombrado');
+        });
+    }
+  }
+
+  deleteBoard(board: Board) {
+    if (confirm(`¿Estás seguro de eliminar el tablero "${board.title}"? Esta acción no se puede deshacer.`)) {
+      this.boardsService.delete(board.id)
+        .subscribe(() => {
+          this.toastr.success('Tablero eliminado');
+          this.router.navigate(['/app/boards']);
+        });
+    }
+  }
+
+  renameList(list: List) {
+    const newTitle = prompt('Nuevo nombre de la lista:', list.title);
+    if (newTitle && newTitle !== list.title) {
+      this.listsService.update(list.id, { title: newTitle })
+        .subscribe(() => {
+          list.title = newTitle;
+          this.toastr.success('Lista renombrada');
+        });
+    }
+  }
+
+  deleteList(list: List) {
+    if (confirm(`¿Estás seguro de eliminar la lista "${list.title}"?`)) {
+      this.listsService.delete(list.id)
+        .subscribe(() => {
+          if (this.board) {
+            const listIndex = this.board.lists.findIndex(item => item.id === list.id);
+            if (listIndex !== -1) {
+              this.board.lists.splice(listIndex, 1);
+            }
+          }
+          this.toastr.success('Lista eliminada');
+        });
+    }
   }
 
   get colors() {

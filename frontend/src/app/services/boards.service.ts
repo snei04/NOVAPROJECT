@@ -70,6 +70,14 @@ export class BoardsService {
     return onBottomPosition + this.bufferSpace;
   }
 
+   update(id: string, changes: { title?: string }) {
+    return this.http.put(`${this.apiUrl}/api/v1/boards/${id}`, changes, { context: checkToken() });
+  }
+
+  delete(id: string) {
+    return this.http.delete(`${this.apiUrl}/api/v1/boards/${id}`, { context: checkToken() });
+  }
+
   setBackgroundColor(color: Colors) {
     this.backgroundColor$.next(color);
   }

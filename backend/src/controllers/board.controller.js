@@ -87,6 +87,22 @@ export const getBoard = async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 };
+
+export const updateBoard = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body; // Ej: { title, backgroundColor }
+
+    // Aquí llamaremos al servicio para actualizar el tablero
+    await BoardService.updateBoard(id, updates);
+    
+    res.status(200).json({ message: 'Tablero actualizado exitosamente' });
+  } catch (error) {
+    console.error('Error al actualizar el tablero:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
 //Borrar un tablero
 export const deleteBoard = async (req, res) => {
   const { id } = req.params; // ID del tablero a eliminar
