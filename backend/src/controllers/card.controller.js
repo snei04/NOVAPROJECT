@@ -46,8 +46,9 @@ export const updateCard = async (req, res) => {
     if (userRole !== 'owner') {
       console.log("--- [DEBUG] El usuario no es 'owner'. Verificando permisos de miembro...");
       
-      const allowedUpdatesForMember = ['description']; // Campos que un miembro puede editar
+      const allowedUpdatesForMember = ['description', 'isCompleted']; // Campos que un miembro puede editar
       const requestedUpdates = Object.keys(updates);
+  
 
       console.log(`--- [DEBUG] Campos permitidos para miembros: [${allowedUpdatesForMember.join(', ')}]`);
       console.log(`--- [DEBUG] Campos solicitados: [${requestedUpdates.join(', ')}]`);

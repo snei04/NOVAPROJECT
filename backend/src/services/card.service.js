@@ -29,7 +29,7 @@ class CardService {
           value = value ? new Date(value).toISOString().slice(0, 19).replace('T', ' ') : null;
         }
         if (key === 'listId') field = 'list_id';
-
+        if (key === 'isCompleted') field = 'is_completed';
         fieldsToUpdate.push(`${field} = ?`);
         values.push(value);
       }

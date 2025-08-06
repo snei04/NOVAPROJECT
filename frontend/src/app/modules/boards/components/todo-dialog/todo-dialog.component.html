@@ -27,11 +27,14 @@
     <div *ngIf="isEditingDescription">
       <textarea [formControl]="descriptionInput" rows="3" class="w-full bg-white border-gray-300 border-2 rounded p-2"></textarea>
       <div class="flex space-x-2 mt-2">
-        <app-btn color="success" (click)="saveDescription()">Guardar</app-btn>
-        <app-btn typeBtn="button" color="light" (click)="isEditingDescription = false">
-          <fa-icon [icon]="faClose"></fa-icon>
-        </app-btn>
-      </div>
+  <app-btn color="success" (click)="saveDescription()">Guardar Cambios</app-btn>
+  
+  <app-btn color="primary" (click)="saveAndComplete()">Guardar y Completar</app-btn>
+
+  <app-btn typeBtn="button" color="light" (click)="isEditingDescription = false">
+    <fa-icon [icon]="faClose"></fa-icon>
+  </app-btn>
+</div>
     </div>
 
   </div>
@@ -67,6 +70,13 @@
       <span>Etiquetas</span>
     </span>
   </app-btn>
+
+    <div *ngIf="userRole === 'owner'" class="mt-4">
+      <app-btn (click)="deleteCard()" color="danger" typeBtn="button">
+        Eliminar Tarea
+      </app-btn>
+    </div>
+
 </div>
 
 <ng-template

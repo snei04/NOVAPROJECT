@@ -8,6 +8,7 @@ import { MeService } from '@services/me.service';
 import { ResponseLogin } from '@models/auth.model';
 import { User } from '@models/user.model';
 import { BehaviorSubject } from 'rxjs';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -85,6 +86,10 @@ export class AuthService {
       })
     );
   }
+
+  checkUserExists(email: string): Observable<{ exists: boolean }> {
+  return this.http.post<{ exists: boolean }>(`${this.apiUrl}/api/v1/auth/check-user`, { email });
+}
 
   logout() {
     this.tokenService.removeToken();

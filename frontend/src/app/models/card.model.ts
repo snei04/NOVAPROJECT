@@ -9,9 +9,11 @@ export interface Card {
   description?: string;
   position: number;
   list: List;
+  isCompleted: boolean;
   labels: Label[];
   assignees: User[];
   dueDate?: string | Date;
+  
 }
 
 // export interface CreateCardDto {
@@ -32,6 +34,7 @@ export interface UpdateCardDto {
   description?: string;
   position?: number;
   listId?: string | number;
+  isCompleted?: boolean;
   boardId?: string;
   dueDate?: string | Date;
 }

@@ -50,7 +50,7 @@ export const getBoard = async (req, res) => {
         const [lists] = await pool.query('SELECT * FROM lists WHERE board_id = ? ORDER BY position', [id]);
         
         // Consulta explícita de todas las columnas de la tarjeta
-        const [cards] = await pool.query('SELECT id, title, description, position, due_date, list_id FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?) ORDER BY position', [id]);
+        const [cards] = await pool.query('SELECT id, title, description, position, due_date, list_id, is_completed FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?) ORDER BY position', [id]);
         
         const [members] = await pool.query('SELECT u.id, u.nombre AS name, u.email, u.avatar FROM usuarios u INNER JOIN board_members bm ON u.id = bm.user_id WHERE bm.board_id = ?', [id]);
         const [labels] = await pool.query('SELECT l.id, l.name, l.color, cl.card_id FROM labels l INNER JOIN card_labels cl ON l.id = cl.label_id WHERE cl.card_id IN (SELECT id FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?))', [id]);
@@ -63,6 +63,7 @@ export const getBoard = async (req, res) => {
       position: card.position,
       dueDate: card.due_date, // Aquí hacemos la traducción
       list_id: card.list_id,
+       isCompleted: card.is_completed,
       labels: labels.filter(label => label.card_id === card.id),
       assignees: assignees.filter(assignee => assignee.card_id === card.id)
     }));

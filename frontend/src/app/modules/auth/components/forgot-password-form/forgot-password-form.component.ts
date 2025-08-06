@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-
 import { AuthService } from '@services/auth.service';
 import { RequestStatus } from '@models/request-status.model';
 
@@ -14,13 +13,14 @@ export class ForgotPasswordFormComponent {
     email: ['', [Validators.email, Validators.required]],
   });
   status: RequestStatus = 'init';
-  emailSent = false;
+  emailSent = false; // <-- Propiedad añadida
 
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService
   ) { }
 
+  // <-- Función añadida
   sendLink() {
     if (this.form.valid) {
       this.status = 'loading';
@@ -31,13 +31,13 @@ export class ForgotPasswordFormComponent {
           this.status = 'success';
           this.emailSent = true;
         },
-        error: () => {
+        error: (error) => {
           this.status = 'failed';
+          console.error(error);
         }
       });
     } else {
       this.form.markAllAsTouched();
     }
   }
-
 }

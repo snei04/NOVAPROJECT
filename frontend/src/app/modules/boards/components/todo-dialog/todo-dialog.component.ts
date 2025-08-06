@@ -4,7 +4,7 @@ import { FormBuilder, FormControl } from '@angular/forms';
 import { faClose, faCheckToSlot, faBars, faUser, faTag, faCheckSquare, faClock, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { ToastrService } from 'ngx-toastr';
 
-import { Card } from '@models/card.model';
+import { Card, UpdateCardDto } from '@models/card.model';
 import { Label } from '@models/label.model';
 import { User } from '@models/user.model';
 import { CardsService } from '@services/cards.service';
@@ -148,6 +148,23 @@ export class TodoDialogComponent implements OnInit {
     }
   }
 
+  saveAndComplete() {
+    // Creamos un objeto que contiene TODOS los cambios a enviar
+    const updates: UpdateCardDto = {
+      // 1. Añadimos el estado de completado
+      isCompleted: true,
+
+      // 2. Añadimos la descripción que se esté editando en el diálogo
+      description: this.descriptionInput.value,
+    };
+
+    // 3. Enviamos todos los cambios en una sola llamada
+    this.cardsService.update(this.card.id, updates).subscribe(() => {
+      this.toastr.success('Tarea actualizada y marcada como completada');
+      this.dialogRef.close('updated'); // Señal para que el tablero se actualice
+    });
+  }
+
   cancelEditLabel() {
     this.editingLabelId = null;
   }
@@ -171,4 +188,19 @@ export class TodoDialogComponent implements OnInit {
       });
     }
   }
+  deleteCard() {
+    // Verificación extra en el frontend
+    if (this.userRole !== 'owner') {
+      this.toastr.error('Solo el dueño puede eliminar tareas.');
+      return;
+    }
+
+    if (confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
+      this.cardsService.delete(this.card.id).subscribe(() => {
+        this.toastr.success('Tarea eliminada');
+        this.dialogRef.close('deleted'); // Enviamos una señal para que el tablero se actualice
+      });
+    }
+  }
+
 }

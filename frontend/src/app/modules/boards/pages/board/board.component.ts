@@ -109,6 +109,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     // recargamos toda la información del tablero.
     if (result) {
         this.getBoard(this.board!.id);
+        this.getActivities(this.board!.id);
     }
   });
 }
@@ -140,7 +141,10 @@ export class BoardComponent implements OnInit, OnDestroy {
   createCard(list: List) {
     const title = this.inputCard.value;
     if (this.board) {
-      this.cardsService.create({ title, listId: list.id, boardId: this.board.id, position: this.boardsService.getPositionNewItem(list.cards), labels: [], assignees: [] })
+      this.cardsService.create({
+        title, listId: list.id, boardId: this.board.id, position: this.boardsService.getPositionNewItem(list.cards), labels: [], assignees: [],
+        isCompleted: false
+      })
         .subscribe(card => {
           list.cards.push({ ...card, labels: [], assignees: [] });
           this.inputCard.setValue('');
@@ -234,4 +238,20 @@ export class BoardComponent implements OnInit, OnDestroy {
       });
     }
   }
+
+toggleCardCompletion(card: Card) {
+    const newStatus = !card.isCompleted;
+    this.cardsService.update(card.id, { isCompleted: newStatus })
+      .subscribe({
+        next: () => {
+          // Actualizamos el estado local para que el cambio se vea al instante
+          card.isCompleted = newStatus;
+          this.toastr.success('Estado de la tarea actualizado');
+        },
+        error: () => {
+          this.toastr.error('No se pudo actualizar la tarea');
+        }
+      });
+  }
+
 }

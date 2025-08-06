@@ -26,6 +26,11 @@ export class CardsService {
       context: checkToken()
     })
   }
+
+  delete(id: string) {
+    return this.http.delete(`${this.apiUrl}/api/v1/cards/${id}`, { context: checkToken() });
+  }
+
  assignMember(cardId: string, userIdToAssign: string) {
     return this.http.post(`${this.apiUrl}/api/v1/cards/assign-member`, { cardId, userIdToAssign }, {
       context: checkToken(),

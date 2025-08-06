@@ -34,11 +34,23 @@
         <div class="text-sm mt-2 min-h-[2.5rem]" [id]="list.id" cdkDropList (cdkDropListDropped)="drop($event)" [cdkDropListData]="list.cards">
           
           <div
-            (click)="openDialog(card)"
-            *ngFor="let card of list.cards"
-            cdkDrag
-            class="bg-white shadow p-2 rounded mt-2 border-b border-x-gray-300 cursor-pointer hover:bg-gray-400"
-          >
+  (click)="openDialog(card)"
+  *ngFor="let card of list.cards"
+  cdkDrag
+  class="bg-white shadow p-2 rounded mt-2 border-b border-x-gray-300 cursor-pointer hover:bg-gray-400"
+  [class.opacity-60]="card.isCompleted"
+>
+  <div class="flex justify-between items-start">
+    <p class="mb-2 flex-grow" [class.line-through]="card.isCompleted">{{ card.title }}</p> <input 
+      type="checkbox" 
+      [checked]="card.isCompleted" 
+      (change)="toggleCardCompletion(card)"
+      (click)="$event.stopPropagation()"
+      class="ml-2 mt-1"
+    />
+  </div>
+
+
             <div class="flex flex-wrap gap-1 mb-2">
               <span
                 *ngFor="let label of card.labels"
@@ -55,7 +67,7 @@
               </span>
             </div>
 
-            <p class="mb-2">{{ card.title }}</p>
+          
 
             <div *ngIf="card.assignees.length > 0" class="flex justify-end -space-x-2">
               <img

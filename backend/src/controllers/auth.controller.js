@@ -106,3 +106,17 @@ export const isAvailable = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
+
+export const checkUserExists = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ message: 'Email es requerido' });
+  }
+  try {
+    const [userRows] = await pool.query('SELECT id FROM usuarios WHERE email = ?', [email]);
+    // Respondemos 'true' si encontramos una o más filas (el usuario existe)
+    res.status(200).json({ exists: userRows.length > 0 });
+  } catch (error) {
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
