@@ -15,6 +15,7 @@ import { Card } from '@models/card.model';
 import { List } from '@models/list.model';
 import { Activity } from '@models/activity.model';
 import { BACKGROUNDS } from '@models/colors.model';
+import { AssociateDialogComponent } from '@boards/components/associate-dialog/associate-dialog.component';
 
 @Component({
   selector: 'app-board',
@@ -32,6 +33,7 @@ import { BACKGROUNDS } from '@models/colors.model';
 })
 export class BoardComponent implements OnInit, OnDestroy {
   board: Board | null = null;
+  associatedBoards: Board[] = [];
   activities: Activity[] = [];
   inputCard = new FormControl<string>('', { nonNullable: true, validators: [Validators.required] });
   inputList = new FormControl<string>('', { nonNullable: true, validators: [Validators.required] });
@@ -114,10 +116,27 @@ export class BoardComponent implements OnInit, OnDestroy {
   });
 }
 
+openAssociateDialog() {
+    if (!this.board) return;
+
+    const dialogRef = this.dialog.open(AssociateDialogComponent, {
+      data: {
+        currentBoardId: this.board.id,
+      },
+    });
+
+    dialogRef.closed.subscribe(result => {
+      if (result) {
+        this.getAssociatedBoards(this.board!.id); // Recargamos solo las asociaciones
+      } 
+    });
+  }
+
   private getBoard(id: string) {
     this.boardsService.getBoard(id).subscribe(board => {
       this.board = board;
       this.boardsService.setBackgroundColor(this.board.backgroundColor);
+      this.getAssociatedBoards(id);
     });
   }
 
@@ -217,6 +236,12 @@ export class BoardComponent implements OnInit, OnDestroy {
   private getActivities(id: string) {
     this.boardsService.getActivity(id).subscribe(activities => {
       this.activities = activities;
+    });
+  }
+
+  private getAssociatedBoards(id: string) {
+    this.boardsService.getAssociations(id).subscribe(boards => {
+      this.associatedBoards = boards;
     });
   }
 

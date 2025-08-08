@@ -22,16 +22,36 @@ const getBoardIdFromRequest = async (req) => {
 export const isBoardMember = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const boardId = await getBoardIdFromRequest(req);
-    if (!boardId) return res.status(400).json({ message: 'No se pudo determinar el ID del tablero.' });
-
-    const [memberRows] = await pool.query('SELECT role FROM board_members WHERE board_id = ? AND user_id = ?', [boardId, userId]);
-    if (memberRows.length === 0) {
-      return res.status(403).json({ message: 'No eres miembro de este tablero.' });
+    const boardId = await getBoardIdFromRequest(req); // Usando tu función helper
+    if (!boardId) {
+      return res.status(400).json({ message: 'No se pudo determinar el ID del tablero.' });
     }
 
-    req.boardRole = memberRows[0].role; // Guardamos el rol para usarlo después
+    // UNA SOLA CONSULTA PARA VERIFICAR SI ES DUEÑO O MIEMBRO
+    const [rows] = await pool.query(`
+      SELECT b.user_id as ownerId, bm.role 
+      FROM boards b 
+      LEFT JOIN board_members bm ON b.id = bm.board_id AND bm.user_id = ?
+      WHERE b.id = ?
+    `, [userId, boardId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Tablero no encontrado.' });
+    }
+
+    const { ownerId, role } = rows[0];
+    const isOwner = ownerId === userId;
+    const isMember = role !== null;
+
+    // Si no es ni dueño ni miembro, se le deniega el acceso
+    if (!isOwner && !isMember) {
+      return res.status(403).json({ message: 'No tienes permiso para ver este tablero.' });
+    }
+    
+    // Guardamos el rol para usarlo después (si es dueño, su rol es 'owner')
+    req.boardRole = isOwner ? 'owner' : role;
     next();
+
   } catch (error) {
     res.status(500).json({ message: 'Error interno al verificar la membresía.' });
   }

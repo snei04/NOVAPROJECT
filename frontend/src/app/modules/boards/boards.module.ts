@@ -11,13 +11,16 @@ import { BoardsRoutingModule } from './boards-routing.module';
 import { BoardsComponent } from './pages/boards/boards.component';
 import { BoardComponent } from './pages/board/board.component';
 import { TodoDialogComponent } from './components/todo-dialog/todo-dialog.component';
+import { AssociateDialogComponent } from './components/associate-dialog/associate-dialog.component';
 
 
 @NgModule({
   declarations: [
     BoardsComponent,
     BoardComponent,
-    TodoDialogComponent
+    TodoDialogComponent,
+    AssociateDialogComponent,
+    AssociateDialogComponent
   ],
   imports: [
     CommonModule,

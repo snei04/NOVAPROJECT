@@ -8,7 +8,7 @@ import { Board } from '@models/board.model';
 import { Card } from '@models/card.model';
 import { Colors } from '@models/colors.model';
 import { List } from '@models/list.model';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Activity } from '@models/activity.model';
 
@@ -91,5 +91,18 @@ export class BoardsService {
       context: checkToken(),
     });
   }
+
+  createAssociation(boardId: string, associatedBoardId: string) {
+    return this.http.post(`${this.apiUrl}/api/v1/boards/${boardId}/associations`, { associatedBoardId }, {
+      context: checkToken(),
+    });
+  }
+
+  getAssociations(boardId: string): Observable<Board[]> {
+    return this.http.get<Board[]>(`${this.apiUrl}/api/v1/boards/${boardId}/associations`, {
+      context: checkToken(),
+    });
+  }
+  
 }
 

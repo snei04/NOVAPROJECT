@@ -113,6 +113,28 @@
   </div>
 </div>
 
+<div *ngIf="board && (associatedBoards.length > 0 || board.userRole === 'owner')" class="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-2 flex items-center space-x-2 overflow-x-auto">
+  
+  <button class="px-4 py-1 text-sm font-semibold text-blue-700 bg-blue-100 border-b-2 border-blue-700 rounded-t-md shrink-0">
+    {{ board.title }}
+  </button>
+
+  <a *ngFor="let associated of associatedBoards"
+     [routerLink]="['/app/boards', associated.id]"
+     class="px-4 py-1 text-sm text-gray-600 hover:bg-gray-200 rounded-t-md shrink-0">
+    {{ associated.title }}
+  </a>
+  
+  <button 
+  *ngIf="board.userRole === 'owner' && associatedBoards.length < 5" 
+  (click)="openAssociateDialog()"
+  class="ml-auto text-gray-500 hover:text-black p-1 rounded-full hover:bg-gray-200"
+  title="Asociar otro tablero">
+  +
+</button>
+</div>
+
+
 <div class="mt-8 p-4 bg-white rounded shadow-md container mx-auto">
   <h3 class="text-lg font-semibold mb-4">Actividad Reciente</h3>
   <ul class="space-y-3">

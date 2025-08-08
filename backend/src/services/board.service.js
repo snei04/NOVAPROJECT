@@ -116,6 +116,59 @@ class BoardService {
     
     await pool.query('INSERT INTO board_members (board_id, user_id) VALUES (?, ?)', [boardId, userToInviteId]);
   }
+
+  async getAssociations(boardId) {
+    // Esta consulta obtiene los detalles de los tableros asociados
+    const [associated] = await pool.query(`
+      SELECT b.id, b.title, b.backgroundColor 
+      FROM boards b
+      JOIN associated_boards ab ON b.id = ab.board_id_2
+      WHERE ab.board_id_1 = ?
+    `, [boardId]);
+    return associated;
+  }
+
+  async createAssociation({ boardId, associatedBoardId }) {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      // 1. Contamos las asociaciones para ambos tableros
+      const [countRows1] = await connection.query('SELECT COUNT(*) as count FROM associated_boards WHERE board_id_1 = ?', [boardId]);
+      const [countRows2] = await connection.query('SELECT COUNT(*) as count FROM associated_boards WHERE board_id_1 = ?', [associatedBoardId]);
+
+      // 2. Verificamos si alguno de los dos ha alcanzado el límite de 5
+      if (countRows1[0].count >= 5 || countRows2[0].count >= 5) {
+        const error = new Error('Uno de los tableros ha alcanzado el límite máximo de 5 asociaciones.');
+        error.statusCode = 409;
+        throw error;
+      }
+
+      // 3. Insertamos la asociación en ambas direcciones
+      // A -> B
+      await connection.query(
+        'INSERT INTO associated_boards (board_id_1, board_id_2) VALUES (?, ?)',
+        [boardId, associatedBoardId]
+      );
+      // B -> A
+      await connection.query(
+        'INSERT INTO associated_boards (board_id_1, board_id_2) VALUES (?, ?)',
+        [associatedBoardId, boardId]
+      );
+
+      // 4. Si todo sale bien, confirmamos los cambios
+      await connection.commit();
+
+    } catch (error) {
+      // Si algo falla, revertimos todos los cambios
+      await connection.rollback();
+      throw error; // Lanzamos el error para que el controlador lo maneje
+    } finally {
+      // Liberamos la conexión a la base de datos
+      connection.release();
+    }
+  }
+
 }
 
 export default new BoardService();

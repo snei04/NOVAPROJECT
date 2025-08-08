@@ -6,7 +6,9 @@ import {
     deleteBoard,
     updateBoard,
     addMember,
-    getBoardActivity
+    getBoardActivity,
+    createBoardAssociation,
+    getBoardAssociations
 } from '../controllers/board.controller.js';
 import { getLabelsByBoard } from '../controllers/label.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
@@ -31,5 +33,9 @@ router.post('/:boardId/members', protect, isBoardOwner, addMember);
 // Rutas para obtener datos RELACIONADOS a un tablero
 router.get('/:boardId/activity', protect, isBoardMember, getBoardActivity);
 router.get('/:boardId/labels', protect, isBoardMember, getLabelsByBoard);
+//Rutas para la asociacion de un tablero
+router.route('/:boardId/associations')
+  .get(protect, isBoardMember, getBoardAssociations)
+  .post(protect, isBoardOwner, createBoardAssociation);
 
 export default router;

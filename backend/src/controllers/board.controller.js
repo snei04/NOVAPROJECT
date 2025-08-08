@@ -197,3 +197,42 @@ export const getBoardActivity = async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 };
+
+export const getBoardAssociations = async (req, res) => {
+  try {
+    console.log('--- [DEBUG] Controlador getBoardAssociations INICIADO ---');
+    const { boardId } = req.params; // Usamos 'boardId' como en la ruta corregida
+    
+    console.log(`--- [DEBUG] Llamando al servicio getAssociations con boardId: ${boardId}`);
+    const associations = await BoardService.getAssociations(boardId);
+    
+    console.log('--- [DEBUG] Servicio ejecutado. Enviando respuesta...');
+    res.status(200).json(associations);
+
+  } catch (error) {
+    // ESTE ES EL ERROR QUE NECESITAMOS VER
+    console.log('--- [DEBUG] ERROR en getBoardAssociations ---', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+export const createBoardAssociation = async (req, res) => {
+  try {
+    const { boardId } = req.params; // <-- LÍNEA CORREGIDA
+    const { associatedBoardId } = req.body;
+
+    if (!associatedBoardId) {
+      return res.status(400).json({ message: 'associatedBoardId es requerido en el cuerpo de la petición.' });
+    }
+
+    await BoardService.createAssociation({ boardId, associatedBoardId });
+    res.status(201).json({ message: 'Tablero asociado exitosamente' });
+  } catch (error) {
+    if (error.statusCode === 409) {
+      return res.status(409).json({ message: error.message });
+    }
+    console.error('Error al crear la asociación:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+

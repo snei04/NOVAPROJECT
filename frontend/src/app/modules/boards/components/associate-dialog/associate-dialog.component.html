@@ -1,0 +1,19 @@
+<div class="p-6 bg-white rounded shadow-lg relative w-96">
+  <button (click)="close()" type="button" class="absolute top-3 right-3 focus:outline-none p-2">
+    X
+  </button>
+  <h3 class="text-lg font-semibold mb-4">Asociar un Tablero</h3>
+  <p class="text-sm text-gray-600 mb-4">Selecciona un tablero de tu lista para vincularlo al actual.</p>
+  
+  <ul class="space-y-2 max-h-60 overflow-y-auto">
+    <li *ngFor="let board of allMyBoards" 
+        (click)="associateBoard(board)"
+        class="p-2 rounded cursor-pointer hover:bg-gray-100 flex items-center space-x-2">
+      <span class="w-4 h-4 rounded-sm" [style.background-color]="board.backgroundColor"></span>
+      <span>{{ board.title }}</span>
+    </li>
+    <li *ngIf="allMyBoards.length === 0">
+      <p class="text-gray-500">No tienes otros tableros para asociar.</p>
+    </li>
+  </ul>
+</div>
