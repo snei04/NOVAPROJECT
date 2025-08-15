@@ -92,6 +92,30 @@ export const refreshToken = async (req, res) => {
   }
 };
 
+
+
+
+// Si necesitas esta función, usa la versión de función flecha correctamente:
+import jwt from 'jsonwebtoken';
+
+export const refreshAccessToken = ({ refreshToken }) => {
+  try {
+    // 1. Verificamos que el refresh token sea válido usando su secreto
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+    // 2. Si es válido, creamos un nuevo accessToken con el payload del usuario
+    const payload = { id: decoded.id, name: decoded.name };
+    const newAccessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: '15m', // El nuevo token también dura 15 minutos
+    });
+    
+    return newAccessToken;
+  } catch (error) {
+    // Si el refresh token es inválido o ha expirado, lanzamos un error
+    throw new Error('Token de refresco inválido o expirado');
+  }
+};
+
 export const isAvailable = async (req, res) => {
   const { email } = req.body;
   if (!email) {

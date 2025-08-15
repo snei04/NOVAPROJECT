@@ -164,6 +164,7 @@ export const addMember = async (req, res) => {
     const inviteLink = `http://localhost:4200/app/boards/${boardId}`;
     const emailHtml = `
       <h1>¡Has sido invitado a un tablero!</h1>
+
       <p>Hola,</p>
       <p>El usuario <b>${owner.name}</b> te ha invitado a colaborar en el tablero "<b>${boardTitle}</b>" en Novaproject.</p>
       <a href="${inviteLink}" style="padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Ver el tablero</a>

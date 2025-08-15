@@ -46,13 +46,39 @@ class AuthService {
     const hashedPassword = await bcrypt.hash(newPassword, salt);
     await pool.query('UPDATE usuarios SET password = ? WHERE id = ?', [hashedPassword, decoded.id]);
   }
+ refreshAccessToken({ refreshToken }) {
+    try {
+      // 1. Verificamos que el refresh token sea válido usando su secreto
+      const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+      // 2. Si es válido, creamos un nuevo accessToken con el payload del usuario
+      const payload = { id: decoded.id, name: decoded.name };
+      const newAccessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '15m', // El nuevo token también dura 15 minutos
+      });
+      
+      return newAccessToken;
+    } catch (error) {
+      // Si el refresh token es inválido o ha expirado, lanzamos un error
+      throw new Error('Token de refresco inválido o expirado');
+    }
+  }
 
   refreshAccessToken({ refreshToken }) {
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const payload = { id: decoded.id, name: decoded.name };
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: '15m',
-    });
+    try {
+      // 1. Verificamos el refresh token
+      const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+      // 2. Si es válido, creamos un nuevo accessToken
+      const payload = { id: decoded.id, name: decoded.name };
+      const newAccessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '15m',
+      });
+      
+      return newAccessToken;
+    } catch (error) {
+      throw new Error('Token de refresco inválido o expirado');
+    }
   }
 
 }

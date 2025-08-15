@@ -1,13 +1,8 @@
 import { Injectable } from '@angular/core';
-import {
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpInterceptor,
-  HttpContextToken,
-  HttpContext,
-} from '@angular/common/http';
-import { Observable, switchMap } from 'rxjs';
+import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse, HttpContextToken, HttpContext } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 import { TokenService } from '@services/token.service';
 import { AuthService } from '@services/auth.service';
@@ -21,43 +16,69 @@ export function checkToken() {
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
 
+  private isRefreshing = false;
+
   constructor(
     private tokenService: TokenService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    if (request.context.get(CHECK_TOKEN)) {
-      const isValidToken = this.tokenService.isValidToken(); // accessToken
-      if (isValidToken) {
-        return this.addToken(request, next);
-      } else {
-        return this.updateAccessTokenAndRefreshToken(request, next);
-      }
+    if (!request.context.get(CHECK_TOKEN)) {
+      return next.handle(request);
     }
-    return next.handle(request);
-  }
 
-  private addToken(request: HttpRequest<unknown>, next: HttpHandler) {
     const accessToken = this.tokenService.getToken();
     if (accessToken) {
-      const authRequest = request.clone({
-        headers: request.headers.set('Authorization', `Bearer ${accessToken}`)
-      });
-      return next.handle(authRequest);
+      request = this.addToken(request, accessToken);
     }
-    return next.handle(request);
+
+    return next.handle(request).pipe(
+      catchError((error: HttpErrorResponse) => {
+        // Si el error es 401 (Token Expirado)
+        if (error.status === 401) {
+          return this.handle401Error(request, next);
+        }
+        return throwError(() => error);
+      })
+    );
   }
 
-  private updateAccessTokenAndRefreshToken(request: HttpRequest<unknown>, next: HttpHandler) {
-    const refreshToken = this.tokenService.getRefreshToken();
-    const isValidRefreshToken = this.tokenService.isValidRefreshToken();
-    if (refreshToken && isValidRefreshToken) {
-      return this.authService.refreshToken(refreshToken)
-      .pipe(
-        switchMap(() => this.addToken(request, next)),
-      )
+  private addToken(request: HttpRequest<unknown>, token: string) {
+    return request.clone({
+      headers: request.headers.set('Authorization', `Bearer ${token}`)
+    });
+  }
+
+  private handle401Error(request: HttpRequest<any>, next: HttpHandler) {
+    if (!this.isRefreshing) {
+      this.isRefreshing = true;
+      const refreshToken = this.tokenService.getRefreshToken();
+
+      if (refreshToken && this.tokenService.isValidRefreshToken()) {
+        return this.authService.refreshToken(refreshToken).pipe(
+          switchMap((response) => {
+            this.isRefreshing = false;
+            this.tokenService.saveToken(response.access_token);
+            // Reintentamos la petición original con el nuevo token
+            return next.handle(this.addToken(request, response.access_token));
+          }),
+          catchError((error) => {
+            this.isRefreshing = false;
+            // Si el refresh token también falla, cerramos sesión
+            this.tokenService.removeToken();
+            this.tokenService.removeRefreshToken();
+            this.router.navigate(['/login']);
+            return throwError(() => error);
+          })
+        );
+      }
     }
-    return next.handle(request);
+    // Si no hay refresh token o ya se está refrescando, cerramos sesión
+    this.tokenService.removeToken();
+    this.tokenService.removeRefreshToken();
+    this.router.navigate(['/login']);
+    return throwError(() => new Error('Refresh token not available'));
   }
 }

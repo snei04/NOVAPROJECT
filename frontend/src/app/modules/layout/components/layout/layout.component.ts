@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '@services/auth.service';
+import { InactivityService } from '@services/inactivity.service';
 
 @Component({
   selector: 'app-layout',
@@ -7,7 +8,8 @@ import { AuthService } from '@services/auth.service';
 })
 export class LayoutComponent implements OnInit {
   constructor(
-    private authService: AuthService
+    private authService: AuthService,
+    private inactivityService: InactivityService
   ) {}
 
   ngOnInit() {
