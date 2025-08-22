@@ -60,6 +60,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       const id = params.get('boardId');
+      this.boardsService.setCurrentBoardId(id);
       if (id) {
         this.getBoard(id);
         this.getActivities(id);
@@ -68,6 +69,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.boardsService.setCurrentBoardId(null);
     this.boardsService.setBackgroundColor('sky');
   }
 

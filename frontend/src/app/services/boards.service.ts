@@ -19,8 +19,14 @@ export class BoardsService {
   apiUrl = environment.API_URL;
   bufferSpace = 65535;
   backgroundColor$ = new BehaviorSubject<Colors>('sky');
+  private boardIdSource = new BehaviorSubject<string | null>(null);
+  boardId$ = this.boardIdSource.asObservable();
 
   constructor(private http: HttpClient) {}
+
+  setCurrentBoardId(id: string | null) {
+    this.boardIdSource.next(id);
+  }
 
   getBoard(id: Board['id']) {
     return this.http.get<Board>(`${this.apiUrl}/api/v1/boards/${id}`, {

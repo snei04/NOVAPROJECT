@@ -106,32 +106,32 @@
         </div>
       </div>
       <ul class="py-1">
-        <li>
-          <a
-            routerLink="/app/profile"
-            class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
-            >Perfil</a
-          >
-        </li>
-        <li>
-          <a
-            class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
-            >Actividad</a
-          >
-        </li>
-        <li>
-          <a
-            class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
-            >Tarjetas</a
-          >
-        </li>
-        <li>
-          <a
-            class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
-            >Ajustes</a
-          >
-        </li>
-      </ul>
+  <li>
+    <a
+      routerLink="/app/profile"
+      class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
+      >Perfil</a
+    >
+  </li>
+
+  <ng-container *ngIf="boardId">
+    <li>
+      <a [routerLink]="['/app/boards', boardId, 'activity']" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
+        Actividad
+      </a>
+    </li>
+    <li>
+      <a [routerLink]="['/app/boards', boardId, 'cards']" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
+        Tarjetas
+      </a>
+    </li>
+    <li>
+      <a [routerLink]="['/app/boards', boardId, 'settings']" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
+        Ajustes
+      </a>
+    </li>
+  </ng-container>
+</ul>
       <ul class="py-1">
         <li>
           <button

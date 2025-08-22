@@ -36,8 +36,7 @@ export class TokenInterceptor implements HttpInterceptor {
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        // Si el error es 401 (Token Expirado)
-        if (error.status === 401) {
+        if (error.status === 401) { // 401 Unauthorized
           return this.handle401Error(request, next);
         }
         return throwError(() => error);
@@ -61,24 +60,23 @@ export class TokenInterceptor implements HttpInterceptor {
           switchMap((response) => {
             this.isRefreshing = false;
             this.tokenService.saveToken(response.access_token);
-            // Reintentamos la petición original con el nuevo token
             return next.handle(this.addToken(request, response.access_token));
           }),
           catchError((error) => {
             this.isRefreshing = false;
-            // Si el refresh token también falla, cerramos sesión
-            this.tokenService.removeToken();
-            this.tokenService.removeRefreshToken();
-            this.router.navigate(['/login']);
+            this.logoutAndRedirect();
             return throwError(() => error);
           })
         );
       }
     }
-    // Si no hay refresh token o ya se está refrescando, cerramos sesión
+    this.logoutAndRedirect();
+    return throwError(() => new Error('Refresh token not available'));
+  }
+
+  private logoutAndRedirect() {
     this.tokenService.removeToken();
     this.tokenService.removeRefreshToken();
     this.router.navigate(['/login']);
-    return throwError(() => new Error('Refresh token not available'));
   }
 }

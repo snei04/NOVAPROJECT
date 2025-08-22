@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+// 1. AÑADE ESTAS IMPORTACIONES
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
+
 import { faBell, faInfoCircle, faClose, faAngleDown } from '@fortawesome/free-solid-svg-icons';
 import { Colors, NAVBAR_BACKGROUNDS } from '@models/colors.model';
 import { Board } from '@models/board.model';
@@ -12,23 +15,22 @@ import { MeService } from '@services/me.service';
   templateUrl: './navbar.component.html',
 })
 export class NavbarComponent implements OnInit {
-  // --- Iconos ---
   faBell = faBell;
   faInfoCircle = faInfoCircle;
   faClose = faClose;
   faAngleDown = faAngleDown;
 
-  // --- Estados de la UI ---
   isOpenOverlayAvatar = false;
   isOpenOverlayBoards = false;
   isOpenOverlayCreateBoard = false;
 
-  // --- Datos ---
   user$ = this.authService.user$;
   ownedBoards: Board[] = [];
   memberBoards: Board[] = [];
   
-  // --- Estilos ---
+  // 2. AÑADE LA NUEVA PROPIEDAD
+  boardId: string | null = null;
+
   navBarBackgroundColor: Colors = 'sky';
   navBarColors = NAVBAR_BACKGROUNDS;
 
@@ -36,7 +38,8 @@ export class NavbarComponent implements OnInit {
     private authService: AuthService,
     private boardsService: BoardsService,
     private meService: MeService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute // 3. INYECTA ActivatedRoute
   ) {
     this.boardsService.backgroundColor$.subscribe(color => {
       this.navBarBackgroundColor = color;
@@ -44,10 +47,23 @@ export class NavbarComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Obtenemos los tableros y los separamos en las dos listas
     this.meService.getMeBoards().subscribe(data => {
       this.ownedBoards = data.owned;
       this.memberBoards = data.member;
+    });
+
+    // 4. AÑADE LA LÓGICA PARA OBTENER EL boardId DE LA URL
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      let currentRoute = this.route.firstChild;
+      while (currentRoute?.firstChild) {
+        currentRoute = currentRoute.firstChild;
+      }
+      this.boardsService.boardId$.subscribe(id => {
+      this.boardId = id;
+      console.log('Board ID recibido en la Navbar via Servicio:', this.boardId);
+    });
     });
   }
 
