@@ -161,7 +161,7 @@ export const addMember = async (req, res) => {
     await pool.query('INSERT INTO board_members (board_id, user_id, role) VALUES (?, ?, ?)', [boardId, userToInviteId, 'member']);
 
     // --- 3. Lógica para enviar el correo de invitación ---
-    const inviteLink = `http://localhost:4200/app/boards/${boardId}`;
+    const inviteLink = `process.env.FRONTEND_URL/app/boards/${boardId}`;
     const emailHtml = `
       <h1>¡Has sido invitado a un tablero!</h1>
 

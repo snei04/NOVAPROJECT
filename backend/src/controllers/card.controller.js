@@ -143,7 +143,7 @@ export const assignMemberToCard = async (req, res) => {
     await pool.query('INSERT INTO card_assignees (card_id, user_id) VALUES (?, ?)', [cardId, userIdToAssign]);
 
     // 3. Se añade la lógica para enviar el correo de notificación
-    const taskLink = `http://localhost:4200/app/boards/${boardId}`;
+    const taskLink = `process.env.FRONTEND_URL/app/boards/${boardId}`;
     const emailHtml = `
       <h1>Nueva Tarea Asignada</h1>
       <p>Hola ${userToAssign.nombre},</p>

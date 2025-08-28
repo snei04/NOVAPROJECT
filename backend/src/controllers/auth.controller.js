@@ -50,7 +50,7 @@ export const forgotPassword = async (req, res) => {
       const resetToken = AuthService.createResetToken(user);
       
       // --- 2. Usa el servicio de correo ---
-      const resetLink = `http://localhost:4200/recovery?token=${resetToken}`;
+      const resetLink = `process.env.FRONTEND_URL/recovery?token=${resetToken}`;
       const emailHtml = `
         <h1>Restablecimiento de Contraseña</h1>
         <p>Hola ${user.nombre},</p>
