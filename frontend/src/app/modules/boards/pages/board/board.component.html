@@ -160,7 +160,7 @@
 <div class="mt-8 p-4 bg-white rounded shadow-md container mx-auto">
   <h3 class="text-lg font-semibold mb-4">Actividad Reciente</h3>
   <ul class="space-y-3">
-    @for (activity of activities; track activity.id) {
+    @for (activity of activities; track $index) {
       <li class="flex items-center space-x-3 text-sm">
         <img [src]="activity.avatar" [alt]="activity.userName" class="w-8 h-8 rounded-full">
         <div>
