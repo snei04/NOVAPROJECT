@@ -13,21 +13,18 @@
         <fa-icon [icon]="faPen"></fa-icon>
       </button>
     </div>
-    <div *ngIf="form.controls.email.touched && form.controls.email.invalid">
-      <p
-        *ngIf="form.controls.email.hasError('required')"
-        class="font-medium text-red-500 text-xs mt-1 ml-1"
-      >
-        Este campo es obligatorio
-      </p>
-      <p
-        *ngIf="form.controls.email.hasError('email')"
-        class="font-medium text-red-500 text-xs mt-1 ml-1"
-      >
-        Este campo debe ser un correo electrónico
-      </p>
-    </div>
-
+    @if (form.controls.email.touched && form.controls.email.invalid) {
+      @if (form.controls.email.hasError('required')) {
+        <p class="font-medium text-red-500 text-xs mt-1 ml-1">
+          Este campo es obligatorio
+        </p>
+      }
+      @if (form.controls.email.hasError('email')) {
+        <p class="font-medium text-red-500 text-xs mt-1 ml-1">
+          Este campo debe ser un correo electrónico
+        </p>
+      }
+    }
   </div>
   <div>
     <div class="relative">
@@ -41,28 +38,24 @@
         <fa-icon [icon]="showPassword ? faEye : faEyeSlash"></fa-icon>
       </button>
     </div>
-    <div *ngIf="form.controls.password.touched && form.controls.password.invalid">
-      <p
-        *ngIf="form.controls.password.hasError('required')"
-        class="font-medium text-red-500 text-xs mt-1 ml-1"
-      >
-        Este campo es obligatorio
-      </p>
-      <p
-        *ngIf="form.controls.password.hasError('minlength')"
-        class="font-medium text-red-500 text-xs mt-1 ml-1"
-      >
-        Este campo debe tener más de 6 caracteres.
-      </p>
-    </div>
+    @if (form.controls.password.touched && form.controls.password.invalid) {
+      @if (form.controls.password.hasError('required')) {
+        <p class="font-medium text-red-500 text-xs mt-1 ml-1">
+          Este campo es obligatorio
+        </p>
+      }
+      @if (form.controls.password.hasError('minlength')) {
+        <p class="font-medium text-red-500 text-xs mt-1 ml-1">
+          Este campo debe tener más de 6 caracteres.
+        </p>
+      }
+    }
   </div>
-  <div *ngIf="status === 'failed'">
-    <p
-      class="font-medium text-red-500 text-xs mt-1 ml-1"
-    >
+  @if (status === 'failed') {
+    <p class="font-medium text-red-500 text-xs mt-1 ml-1">
       Las credenciales no son válidas
     </p>
-  </div>
+  }
   <div>
     <app-btn
       typeBtn="submit"

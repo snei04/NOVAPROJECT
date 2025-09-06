@@ -11,36 +11,36 @@
   </div>
   <div class="flex w-full gap-4">
     <div class="flex space-x-2 mb-5 w-4/6">
-  <fa-icon class="text-gray-800 mt-1" [icon]="faBars"></fa-icon>
-  <div class="flex flex-col w-full">
-    <h3 class="text-lg font-semibold text-gray-800">Descripción</h3>
-    
-    <div *ngIf="!isEditingDescription">
-      <p *ngIf="card.description; else noDescription" (click)="isEditingDescription = true" class="text-sm text-gray-500 cursor-pointer hover:bg-gray-200 p-2 rounded">
-        {{ card.description }}
-      </p>
-      <ng-template #noDescription>
-        <app-btn color="light" (click)="isEditingDescription = true">Añadir una descripción</app-btn>
-      </ng-template>
+      <fa-icon class="text-gray-800 mt-1" [icon]="faBars"></fa-icon>
+      <div class="flex flex-col w-full">
+        <h3 class="text-lg font-semibold text-gray-800">Descripción</h3>
+        
+        @if (isEditingDescription) {
+          <div>
+            <textarea [formControl]="descriptionInput" rows="3" class="w-full bg-white border-gray-300 border-2 rounded p-2"></textarea>
+            <div class="flex space-x-2 mt-2">
+              <app-btn color="success" (click)="saveDescription()">Guardar Cambios</app-btn>
+              <app-btn color="primary" (click)="saveAndComplete()">Guardar y Completar</app-btn>
+              <app-btn typeBtn="button" color="light" (click)="isEditingDescription = false">
+                <fa-icon [icon]="faClose"></fa-icon>
+              </app-btn>
+            </div>
+          </div>
+        } @else {
+          <div>
+            @if (card.description) {
+              <p (click)="isEditingDescription = true" class="text-sm text-gray-500 cursor-pointer hover:bg-gray-200 p-2 rounded">
+                {{ card.description }}
+              </p>
+            } @else {
+              <app-btn color="light" (click)="isEditingDescription = true">Añadir una descripción</app-btn>
+            }
+          </div>
+        }
+      </div>
     </div>
-
-    <div *ngIf="isEditingDescription">
-      <textarea [formControl]="descriptionInput" rows="3" class="w-full bg-white border-gray-300 border-2 rounded p-2"></textarea>
-      <div class="flex space-x-2 mt-2">
-  <app-btn color="success" (click)="saveDescription()">Guardar Cambios</app-btn>
-  
-  <app-btn color="primary" (click)="saveAndComplete()">Guardar y Completar</app-btn>
-
-  <app-btn typeBtn="button" color="light" (click)="isEditingDescription = false">
-    <fa-icon [icon]="faClose"></fa-icon>
-  </app-btn>
-</div>
-    </div>
-
-  </div>
-  </div>
     <div class="flex flex-auto space-y-2 flex-col">
-   <div>
+      <div>
         <h4 class="text-sm font-semibold mb-1">Fecha Vencimiento</h4>
         <input 
             type="datetime-local" 
@@ -48,35 +48,38 @@
             (change)="saveDueDate()"
             class="w-full bg-gray-200 border-none rounded p-2 text-sm"
         >
-    </div>
-  <app-btn
-    typeBtn="button"
-    color="light"
-    cdkOverlayOrigin #membersOverlay="cdkOverlayOrigin"
-    (click)="isOpenMembers = !isOpenMembers">
-    <span class="flex space-x-2 text-left">
-      <fa-icon class="text-gray-800" [icon]="faUser"></fa-icon>
-      <span>Miembros</span>
-    </span>
-  </app-btn>
-
-  <app-btn 
-    typeBtn="button" 
-    color="light" 
-    cdkOverlayOrigin #labelsOverlay="cdkOverlayOrigin" 
-    (click)="isOpenLabels = !isOpenLabels">
-    <span class="flex space-x-2 text-left">
-      <fa-icon class="text-gray-800" [icon]="faTag"></fa-icon>
-      <span>Etiquetas</span>
-    </span>
-  </app-btn>
-
-    <div *ngIf="userRole === 'owner'" class="mt-4">
-      <app-btn (click)="deleteCard()" color="danger" typeBtn="button">
-        Eliminar Tarea
+      </div>
+      <app-btn
+        typeBtn="button"
+        color="light"
+        cdkOverlayOrigin #membersOverlay="cdkOverlayOrigin"
+        (click)="isOpenMembers = !isOpenMembers">
+        <span class="flex space-x-2 text-left">
+          <fa-icon class="text-gray-800" [icon]="faUser"></fa-icon>
+          <span>Miembros</span>
+        </span>
       </app-btn>
-    </div>
 
+      <app-btn 
+        typeBtn="button" 
+        color="light" 
+        cdkOverlayOrigin #labelsOverlay="cdkOverlayOrigin" 
+        (click)="isOpenLabels = !isOpenLabels">
+        <span class="flex space-x-2 text-left">
+          <fa-icon class="text-gray-800" [icon]="faTag"></fa-icon>
+          <span>Etiquetas</span>
+        </span>
+      </app-btn>
+
+      @if (userRole === 'owner') {
+        <div class="mt-4">
+          <app-btn (click)="deleteCard()" color="danger" typeBtn="button">
+            Eliminar Tarea
+          </app-btn>
+        </div>
+      }
+    </div>
+  </div>
 </div>
 
 <ng-template
@@ -87,23 +90,20 @@
   <div class="z-50 my-2 w-60 bg-white rounded shadow-lg p-4">
     <h3 class="text-center font-semibold mb-2">Miembros del Tablero</h3>
     <ul class="space-y-2">
-      <li *ngFor="let member of boardMembers" (click)="toggleMember(member)"
-          class="flex items-center justify-between p-2 rounded cursor-pointer hover:bg-gray-100">
-        <div class="flex items-center space-x-2">
-          <img [src]="member.avatar" [alt]="member.name" class="w-8 h-8 rounded-full">
-          <span>{{ member.name }}</span>
-        </div>
-        <fa-icon *ngIf="isMemberAssigned(member.id)" [icon]="faCheckSquare"></fa-icon>
-      </li>
+      @for (member of boardMembers; track member.id) {
+        <li (click)="toggleMember(member)" class="flex items-center justify-between p-2 rounded cursor-pointer hover:bg-gray-100">
+          <div class="flex items-center space-x-2">
+            <img [src]="member.avatar" [alt]="member.name" class="w-8 h-8 rounded-full">
+            <span>{{ member.name }}</span>
+          </div>
+          @if (isMemberAssigned(member.id)) {
+            <fa-icon [icon]="faCheckSquare"></fa-icon>
+          }
+        </li>
+      }
     </ul>
   </div>
 </ng-template>
-<ng-template
-  cdkConnectedOverlay
-  [cdkConnectedOverlayOrigin]="labelsOverlay"
-  [cdkConnectedOverlayOpen]="isOpenLabels"
-  (overlayOutsideClick)="isOpenLabels = false">
-  </ng-template>
 
 <ng-template
   cdkConnectedOverlay
@@ -114,39 +114,46 @@
     <h3 class="text-center font-semibold mb-2">Etiquetas</h3>
     
     <ul class="space-y-2">
-      <li *ngFor="let label of boardLabels" class="flex items-center justify-between p-1 rounded">
-        <div *ngIf="editingLabelId !== label.id" class="flex items-center justify-between w-full">
-          <div (click)="toggleLabel(label)" class="flex-grow flex items-center cursor-pointer p-1 rounded hover:bg-gray-100">
-            <span class="px-2 py-1 text-xs font-bold rounded" [ngClass]="{
-              'bg-red-200 text-red-800': label.color === 'red',
-              'bg-green-200 text-green-800': label.color === 'green',
-              'bg-blue-200 text-blue-800': label.color === 'blue',
-              'bg-yellow-200 text-yellow-800': label.color === 'yellow',
-              'bg-purple-200 text-purple-800': label.color === 'purple'
-            }">
-              {{ label.name }}
-            </span>
-            <fa-icon *ngIf="isLabelAssigned(label.id)" [icon]="faCheckSquare" class="ml-auto text-gray-700"></fa-icon>
-          </div>
-          <button (click)="editLabel(label)" class="text-gray-500 hover:text-gray-800 ml-2 p-1">
-            <fa-icon [icon]="faPenToSquare"></fa-icon>
-          </button>
-        </div>
-        <form *ngIf="editingLabelId === label.id" (ngSubmit)="saveLabelChanges()" [formGroup]="formEditLabel" class="w-full space-y-2">
-          <input type="text" formControlName="name" class="w-full bg-gray-100 border rounded px-2 py-1 text-sm">
-          <select formControlName="color" class="w-full bg-gray-100 border rounded px-2 py-1 text-sm">
-            <option value="red">Rojo</option>
-            <option value="green">Verde</option>
-            <option value="blue">Azul</option>
-            <option value="yellow">Amarillo</option>
-            <option value="purple">Púrpura</option>
-          </select>
-          <div class="flex space-x-2">
-            <app-btn typeBtn="submit" color="success">Guardar</app-btn>
-            <app-btn typeBtn="button" color="light" (click)="cancelEditLabel()">Cancelar</app-btn>
-          </div>
-        </form>
-      </li>
+      @for (label of boardLabels; track label.id) {
+        <li class="flex items-center justify-between p-1 rounded">
+          @if (editingLabelId === label.id) {
+            <form (ngSubmit)="saveLabelChanges()" [formGroup]="formEditLabel" class="w-full space-y-2">
+              <input type="text" formControlName="name" class="w-full bg-gray-100 border rounded px-2 py-1 text-sm">
+              <select formControlName="color" class="w-full bg-gray-100 border rounded px-2 py-1 text-sm">
+                <option value="red">Rojo</option>
+                <option value="green">Verde</option>
+                <option value="blue">Azul</option>
+                <option value="yellow">Amarillo</option>
+                <option value="purple">Púrpura</option>
+              </select>
+              <div class="flex space-x-2">
+                <app-btn typeBtn="submit" color="success">Guardar</app-btn>
+                <app-btn typeBtn="button" color="light" (click)="cancelEditLabel()">Cancelar</app-btn>
+              </div>
+            </form>
+          } @else {
+            <div class="flex items-center justify-between w-full">
+              <div (click)="toggleLabel(label)" class="flex-grow flex items-center cursor-pointer p-1 rounded hover:bg-gray-100">
+                <span class="px-2 py-1 text-xs font-bold rounded" [ngClass]="{
+                  'bg-red-200 text-red-800': label.color === 'red',
+                  'bg-green-200 text-green-800': label.color === 'green',
+                  'bg-blue-200 text-blue-800': label.color === 'blue',
+                  'bg-yellow-200 text-yellow-800': label.color === 'yellow',
+                  'bg-purple-200 text-purple-800': label.color === 'purple'
+                }">
+                  {{ label.name }}
+                </span>
+                @if (isLabelAssigned(label.id)) {
+                  <fa-icon [icon]="faCheckSquare" class="ml-auto text-gray-700"></fa-icon>
+                }
+              </div>
+              <button (click)="editLabel(label)" class="text-gray-500 hover:text-gray-800 ml-2 p-1">
+                <fa-icon [icon]="faPenToSquare"></fa-icon>
+              </button>
+            </div>
+          }
+        </li>
+      }
     </ul>
 
     <hr class="my-4"/>
@@ -170,5 +177,3 @@
     </form>
   </div>
 </ng-template>
-  </div>
-</div>
