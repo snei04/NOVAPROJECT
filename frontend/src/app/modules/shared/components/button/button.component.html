@@ -5,10 +5,10 @@
   class="w-full font-medium rounded text-sm px-5 py-2"
 >
   <fa-icon
-    *ngIf="loading"
-    class="mr-2"
-    [icon]="faSpinner"
-    [pulse]="true"
-  ></fa-icon>
+  *ngIf="loading"
+  class="mr-2"
+  [icon]="faSpinner"
+  [class.fa-spin]="true"
+></fa-icon>
   <ng-content></ng-content>
 </button>

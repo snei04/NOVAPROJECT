@@ -1,13 +1,24 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from '@guards/auth.guard';
 
-export const LAYOUT_ROUTES: Routes = [ // <-- Renombrado para exportar
+export const LAYOUT_ROUTES: Routes = [
   {
-  path: 'boards',
-  canActivate: [ AuthGuard ],
-  loadChildren: () =>
-    import('../boards/boards.routes').then((m) => m.BOARDS_ROUTES),
-},
+    path: '',
+    redirectTo: 'dashboard', // <-- CAMBIO 1
+    pathMatch: 'full'
+  },
+  {
+    path: 'dashboard', // <-- CAMBIO 2: RUTA AÑADIDA
+    canActivate: [ AuthGuard ],
+    loadComponent: () => 
+      import('../../features/dashboard/components/progress-dashboard/progress-dashboard.component').then(m => m.ProgressDashboardComponent),
+  },
+  {
+    path: 'boards',
+    canActivate: [ AuthGuard ],
+    loadChildren: () =>
+      import('../boards/boards.routes').then((m) => m.BOARDS_ROUTES),
+  },
   {
     path: 'profile',
     canActivate: [ AuthGuard ],
