@@ -1,13 +1,17 @@
 import { Component, EventEmitter, Output } from '@angular/core';
+import { CommonModule } from '@angular/common'; // <-- NUEVO
 import { Router } from '@angular/router';
-import { FormBuilder, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, Validators, FormControl, ReactiveFormsModule } from '@angular/forms'; // <-- NUEVO
 
 import { BoardsService } from '@services/boards.service';
 import { Colors } from '@models/colors.model';
+import { ButtonComponent } from '@shared/components/button/button.component'; // <-- NUEVO
 
 @Component({
   selector: 'app-board-form',
-  templateUrl: './board-form.component.html'
+  templateUrl: './board-form.component.html',
+  standalone: true, // <-- AÑADIDO
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent], // <-- AÑADIDO
 })
 export class BoardFormComponent {
 

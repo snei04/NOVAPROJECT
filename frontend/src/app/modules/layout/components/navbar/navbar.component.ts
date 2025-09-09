@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-// 1. AÑADE ESTAS IMPORTACIONES
-import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { CommonModule } from '@angular/common'; // <-- NUEVO
+import { Router, ActivatedRoute, NavigationEnd, RouterModule } from '@angular/router'; // <-- NUEVO
 import { filter } from 'rxjs/operators';
+import { OverlayModule } from '@angular/cdk/overlay'; // <-- NUEVO
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'; // <-- NUEVO
 
 import { faBell, faInfoCircle, faClose, faAngleDown } from '@fortawesome/free-solid-svg-icons';
 import { Colors, NAVBAR_BACKGROUNDS } from '@models/colors.model';
@@ -10,9 +12,21 @@ import { AuthService } from '@services/auth.service';
 import { BoardsService } from '@services/boards.service';
 import { MeService } from '@services/me.service';
 
+import { ButtonComponent } from '@shared/components/button/button.component'; // <-- NUEVO
+import { BoardFormComponent } from '../board-form/board-form.component'; // <-- NUEVO
+
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
+  standalone: true, // <-- AÑADIDO
+  imports: [ // <-- AÑADIDO
+    CommonModule,
+    RouterModule,
+    OverlayModule,
+    FontAwesomeModule,
+    ButtonComponent,
+    BoardFormComponent
+  ],
 })
 export class NavbarComponent implements OnInit {
   faBell = faBell;

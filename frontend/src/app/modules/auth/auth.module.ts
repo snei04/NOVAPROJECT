@@ -4,7 +4,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { AuthRoutingModule } from './auth-routing.module';
-import { SharedModule } from '../shared/shared.module';
+import { ButtonComponent } from '../shared/components/button/button.component';
+import { CardColorComponent } from '../shared/components/card-color/card-color.component';
 import { LoginComponent } from './pages/login/login.component';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
@@ -34,7 +35,8 @@ import { BackgroundComponent } from './components/background/background.componen
   ],
   imports: [
     CommonModule,
-    SharedModule,
+    ButtonComponent,
+    CardColorComponent,
     AuthRoutingModule,
     ReactiveFormsModule,
     FontAwesomeModule

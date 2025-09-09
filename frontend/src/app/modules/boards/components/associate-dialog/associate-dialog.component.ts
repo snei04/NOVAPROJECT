@@ -1,4 +1,5 @@
 import { Component, OnInit, Inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 import { MeService } from '@services/me.service';
 import { BoardsService } from '@services/boards.service';
@@ -12,6 +13,8 @@ interface InputData {
 @Component({
   selector: 'app-associate-dialog',
   templateUrl: './associate-dialog.component.html',
+  standalone: true, // <-- AÑADIDO
+  imports: [CommonModule], // <-- AÑADIDO
 })
 export class AssociateDialogComponent implements OnInit {
   

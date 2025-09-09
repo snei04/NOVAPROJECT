@@ -1,13 +1,26 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common'; // <-- NUEVO
+import { RouterModule } from '@angular/router'; // <-- NUEVO
+import { CdkAccordionModule } from '@angular/cdk/accordion'; // <-- NUEVO
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'; 
 import { faBox, faWaveSquare, faClock, faAngleUp, faAngleDown, faHeart, faBorderAll, faUsers, faGear } from '@fortawesome/free-solid-svg-icons';
 import { faTrello } from '@fortawesome/free-brands-svg-icons';
 
 import { MeService } from '@services/me.service';
 import { Board } from '@models/board.model';
+import { CardColorComponent } from '@shared/components/card-color/card-color.component';
 
 @Component({
   selector: 'app-boards',
-  templateUrl: './boards.component.html'
+  templateUrl: './boards.component.html',
+  standalone: true, // <-- AÑADIDO
+  imports: [ // <-- AÑADIDO
+    CommonModule,
+    RouterModule,
+    CdkAccordionModule,
+    FontAwesomeModule,
+    CardColorComponent
+  ],
 })
 export class BoardsComponent implements OnInit {
 

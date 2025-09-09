@@ -1,6 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common'; // <-- NUEVO
+import { ReactiveFormsModule, FormBuilder, FormControl } from '@angular/forms'; // <-- NUEVO
 import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
-import { FormBuilder, FormControl } from '@angular/forms';
+import { OverlayModule } from '@angular/cdk/overlay'; // <-- NUEVO
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { ButtonComponent } from '@shared/components/button/button.component';
 import { faClose, faCheckToSlot, faBars, faUser, faTag, faCheckSquare, faClock, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { ToastrService } from 'ngx-toastr';
 
@@ -20,6 +24,14 @@ interface InputData {
 @Component({
   selector: 'app-todo-dialog',
   templateUrl: './todo-dialog.component.html',
+  standalone: true, // <-- AÑADIDO
+  imports: [ // <-- AÑADIDO
+    CommonModule,
+    ReactiveFormsModule,
+    OverlayModule,
+    FontAwesomeModule,
+    ButtonComponent
+  ],
 })
 export class TodoDialogComponent implements OnInit {
   // --- Iconos ---

@@ -1,8 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormControl, Validators } from '@angular/forms';
-import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { Dialog } from '@angular/cdk/dialog';
+import { CommonModule } from '@angular/common'; // <-- NUEVO
+import { ActivatedRoute, Router, RouterModule } from '@angular/router'; // <-- NUEVO
+import { ReactiveFormsModule, FormBuilder, FormControl, Validators } from '@angular/forms'; // <-- NUEVO
+import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop'; // <-- NUEVO
+import { Dialog, DialogModule } from '@angular/cdk/dialog'; // <-- NUEVO
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { ButtonComponent } from '@shared/components/button/button.component';
 import { ToastrService } from 'ngx-toastr';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
 
@@ -20,6 +23,16 @@ import { AssociateDialogComponent } from '@boards/components/associate-dialog/as
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
+  standalone: true, // <-- AÑADIDO
+  imports: [ // <-- AÑADIDO
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    DragDropModule,
+    DialogModule,
+    FontAwesomeModule,
+    ButtonComponent
+  ],
   styles: [
     `
       .cdk-drop-list-dragging .cdk-drag {
