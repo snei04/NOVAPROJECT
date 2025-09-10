@@ -52,23 +52,17 @@ export class ProjectTrackingService {
 
   // Method to load project data from the backend
   loadProjects() {
-    // We will replace 'api/projects' with your actual backend endpoint
-    // For now, we use a placeholder to avoid breaking the app.
-    const projects$ = this.http.get<ProjectMetrics[]>('/api/projects').pipe(
-      tap(projects => this.projectsSignal.set(projects))
-    );
-    
-    // We can subscribe here or use toSignal in the component
-    // For now, let's just return the observable and handle it later.
-    // In a real app, you might subscribe here to set the signal.
-    console.log('Pretending to load projects...');
-    // Since we don't have the API yet, let's set some mock data.
-    this.projectsSignal.set([
-      { id: '1', name: 'Proyecto Alpha', progress: 75, budget: 10000, budgetUsed: 6000, startDate: new Date(), endDate: new Date(), status: 'in-progress', weeklyUpdates: [], kpis: [] },
-      { id: '2', name: 'Proyecto Beta', progress: 30, budget: 20000, budgetUsed: 15000, startDate: new Date(), endDate: new Date(), status: 'at-risk', weeklyUpdates: [], kpis: [] },
-      { id: '3', name: 'Proyecto Gamma', progress: 100, budget: 5000, budgetUsed: 5000, startDate: new Date(), endDate: new Date(), status: 'completed', weeklyUpdates: [], kpis: [] },
-    ]);
+    // AHORA HACEMOS UNA LLAMADA REAL A LA API
+    // El proxy se encarga de redirigir /api/* a tu backend
+    this.http.get<ProjectMetrics[]>('/api/projects/dashboard') // Asumiendo un endpoint que devuelve todos los dashboards
+      .subscribe({
+        next: (projects) => {
+          this.projectsSignal.set(projects); // Actualizamos el signal con los datos reales
+        },
+        error: (err) => {
+          console.error('Error al cargar los proyectos:', err);
+          this.projectsSignal.set([]); // En caso de error, vaciamos la lista
+        }
+      });
   }
-
-  // We can add other methods like scheduleWeeklyTracking later
 }

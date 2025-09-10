@@ -2,8 +2,8 @@ import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // Asumimos que estos componentes se crearán a continuación
-// import { ProjectTimelineComponent } from '../project-timeline/project-timeline.component';
-// import { WeeklyTrackerComponent } from '../weekly-tracker/weekly-tracker.component';
+import { ProjectTimelineComponent } from '../project-timeline/project-timeline.component';
+import { WeeklyTrackerComponent } from '../weekly-tracker/weekly-tracker.component';
 
 import { ProjectTrackingService } from '../../../../core/services/project-tracking.service';
 
@@ -12,8 +12,8 @@ import { ProjectTrackingService } from '../../../../core/services/project-tracki
   standalone: true,
   imports: [
     CommonModule,
-    // ProjectTimelineComponent, // Descomentar cuando se cree
-    // WeeklyTrackerComponent,  // Descomentar cuando se cree
+    ProjectTimelineComponent, // Descomentar cuando se cree
+    WeeklyTrackerComponent,  // Descomentar cuando se cree
   ],
   templateUrl: './progress-dashboard.component.html',
   styleUrls: ['./progress-dashboard.component.scss']

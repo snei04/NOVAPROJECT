@@ -1,0 +1,30 @@
+<div class="space-y-4">
+  @for (project of projects; track project.id) {
+    <div 
+      (click)="onProjectClicked(project)"
+      class="p-4 rounded-lg shadow-sm border hover:shadow-md cursor-pointer transition-shadow">
+      <div class="flex justify-between items-center mb-1">
+        <h4 class="font-bold text-gray-800">{{ project.name }}</h4>
+        <span class="text-sm font-semibold"
+          [ngClass]="{
+            'text-green-600': project.status === 'completed',
+            'text-amber-600': project.status === 'at-risk',
+            'text-blue-600': project.status === 'in-progress'
+          }"
+        >{{ project.progress }}%</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div class="h-2.5 rounded-full" 
+          [style.width]="project.progress + '%'"
+          [ngClass]="{
+            'bg-green-500': project.status === 'completed',
+            'bg-amber-500': project.status === 'at-risk',
+            'bg-blue-500': project.status === 'in-progress'
+          }"
+        ></div>
+      </div>
+    </div>
+  } @empty {
+    <p class="text-gray-500">No hay proyectos para mostrar en el timeline.</p>
+  }
+</div>

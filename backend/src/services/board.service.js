@@ -57,7 +57,7 @@ class BoardService {
     const board = boardRows[0];
 
     const [lists] = await pool.query('SELECT * FROM lists WHERE board_id = ? ORDER BY position', [boardId]);
-    const [cards] = await pool.query('SELECT id, title, description, position, due_date, list_id FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?) ORDER BY position', [boardId]);
+    const [cards] = await pool.query('SELECT id, title, description, position, due_date, list_id, is_completed FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?) ORDER BY position', [boardId]);
     const [members] = await pool.query('SELECT u.id, u.nombre AS name, u.email, u.avatar FROM usuarios u INNER JOIN board_members bm ON u.id = bm.user_id WHERE bm.board_id = ?', [boardId]);
     const [labels] = await pool.query('SELECT l.id, l.name, l.color, cl.card_id FROM labels l INNER JOIN card_labels cl ON l.id = cl.label_id WHERE cl.card_id IN (SELECT id FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?))', [boardId]);
     const [assignees] = await pool.query('SELECT u.id, u.nombre as name, u.email, u.avatar, ca.card_id FROM usuarios u INNER JOIN card_assignees ca ON u.id = ca.user_id WHERE ca.card_id IN (SELECT id FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?))', [boardId]);
@@ -68,6 +68,7 @@ class BoardService {
       description: card.description,
       position: card.position,
       dueDate: card.due_date,
+      isCompleted: Boolean(card.is_completed),
       list_id: card.list_id,
       labels: labels.filter(label => label.card_id === card.id),
       assignees: assignees.filter(assignee => assignee.card_id === card.id)
@@ -169,6 +170,36 @@ class BoardService {
     }
   }
 
+  async getDashboardData(boardId) {
+    // 1. Reutilizamos tu método existente para obtener todos los datos
+    const board = await this.getFullBoardDetails(boardId);
+
+    if (!board) {
+      throw new Error('Tablero no encontrado');
+    }
+
+    // 2. Calculamos las métricas a partir de los datos obtenidos
+    let totalCards = 0;
+    let completedCards = 0;
+    board.lists.forEach(list => {
+      totalCards += list.cards.length;
+      completedCards += list.cards.filter(card => card.isCompleted).length;
+    });
+
+    const progress = totalCards > 0 ? (completedCards / totalCards) * 100 : 0;
+
+    // 3. Construimos y devolvemos el objeto del dashboard
+    return {
+      boardId: board.id,
+      boardTitle: board.title,
+      totalCards,
+      completedCards,
+      progress: Math.round(progress),
+    };
+  }
+
 }
+
+
 
 export default new BoardService();

@@ -19,14 +19,20 @@
   <div class="bg-white rounded-lg shadow-md p-6">
     <h2 class="text-xl font-bold text-gray-800">Timeline de Proyectos</h2>
     <div class="mt-4">
-      <p class="text-gray-500"><i>El componente del Timeline irá aquí.</i></p>
-    </div>
+  <app-project-timeline 
+    [projects]="projects()" 
+    (projectClick)="onProjectClick($event)">
+  </app-project-timeline>
+</div>
   </div>
 
   <div class="bg-white rounded-lg shadow-md p-6">
     <h2 class="text-xl font-bold text-gray-800">Seguimiento Semanal</h2>
     <div class="mt-4">
-      <p class="text-gray-500"><i>El componente de Seguimiento Semanal irá aquí.</i></p>
-    </div>
+  <app-weekly-tracker 
+    [overdueTracks]="overdueTracking()" 
+    (updateSubmitted)="onWeeklyUpdate($event)">
+  </app-weekly-tracker>
+</div>
   </div>
 </div>
