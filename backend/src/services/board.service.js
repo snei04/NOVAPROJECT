@@ -171,32 +171,22 @@ class BoardService {
   }
 
   async getDashboardData(boardId) {
-    // 1. Reutilizamos tu método existente para obtener todos los datos
-    const board = await this.getFullBoardDetails(boardId);
+  // 1. Reutiliza otro método para obtener todos los detalles del tablero desde la base de datos.
+  const board = await this.getFullBoardDetails(boardId);
 
-    if (!board) {
-      throw new Error('Tablero no encontrado');
-    }
+  // 2. Realiza los cálculos necesarios (contar tarjetas, calcular progreso, etc.).
+  let totalCards = 0;
+  let completedCards = 0;
+  // ... lógica de cálculo ...
+  const progress = (completedCards / totalCards) * 100;
 
-    // 2. Calculamos las métricas a partir de los datos obtenidos
-    let totalCards = 0;
-    let completedCards = 0;
-    board.lists.forEach(list => {
-      totalCards += list.cards.length;
-      completedCards += list.cards.filter(card => card.isCompleted).length;
-    });
-
-    const progress = totalCards > 0 ? (completedCards / totalCards) * 100 : 0;
-
-    // 3. Construimos y devolvemos el objeto del dashboard
-    return {
-      boardId: board.id,
-      boardTitle: board.title,
-      totalCards,
-      completedCards,
-      progress: Math.round(progress),
-    };
-  }
+  // 3. Devuelve un objeto JSON limpio con los resultados al controlador.
+  return {
+    totalCards,
+    completedCards,
+    progress: Math.round(progress),
+  };
+}
 
 }
 

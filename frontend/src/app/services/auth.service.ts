@@ -95,4 +95,8 @@ export class AuthService {
     this.tokenService.removeToken();
     this.tokenService.removeRefreshToken();
   }
+
+getToken(): string | null {
+  return this.tokenService.getToken() ?? null;
+}
 }

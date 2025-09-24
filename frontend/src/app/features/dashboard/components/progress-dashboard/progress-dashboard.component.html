@@ -1,16 +1,24 @@
 <div class="p-6 md:p-8 space-y-6">
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+    <div 
+      (click)="filterProjects('in-progress')"
+      class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500 cursor-pointer hover:bg-gray-50 transition-colors">
       <h3 class="text-gray-500 font-semibold">Proyectos Activos</h3>
       <p class="text-4xl font-bold text-gray-800 mt-2">{{ totalProjects() }}</p>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4" [class.border-amber-500]="atRiskCount() > 0" [class.border-gray-300]="atRiskCount() === 0">
+    <div 
+      (click)="filterProjects('at-risk')"
+      class="bg-white rounded-lg shadow-md p-6 border-l-4 cursor-pointer hover:bg-gray-50 transition-colors" 
+      [class.border-amber-500]="atRiskCount() > 0" 
+      [class.border-gray-300]="atRiskCount() === 0">
       <h3 class="text-gray-500 font-semibold">En Riesgo</h3>
       <p class="text-4xl font-bold mt-2" [class.text-amber-500]="atRiskCount() > 0" [class.text-gray-800]="atRiskCount() === 0">{{ atRiskCount() }}</p>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-teal-500">
+    <div 
+      (click)="filterProjects('all')"
+      class="bg-white rounded-lg shadow-md p-6 border-l-4 border-teal-500 cursor-pointer hover:bg-gray-50 transition-colors">
       <h3 class="text-gray-500 font-semibold">Progreso Promedio</h3>
       <p class="text-4xl font-bold text-gray-800 mt-2">{{ avgProgress() | number:'1.0-1' }}%</p>
     </div>
@@ -19,20 +27,20 @@
   <div class="bg-white rounded-lg shadow-md p-6">
     <h2 class="text-xl font-bold text-gray-800">Timeline de Proyectos</h2>
     <div class="mt-4">
-  <app-project-timeline 
-    [projects]="projects()" 
-    (projectClick)="onProjectClick($event)">
-  </app-project-timeline>
-</div>
+      <app-project-timeline 
+        [projects]="projects()" 
+        (projectClick)="onProjectClick($event)">
+      </app-project-timeline>
+    </div>
   </div>
 
   <div class="bg-white rounded-lg shadow-md p-6">
     <h2 class="text-xl font-bold text-gray-800">Seguimiento Semanal</h2>
     <div class="mt-4">
-  <app-weekly-tracker 
-    [overdueTracks]="overdueTracking()" 
-    (updateSubmitted)="onWeeklyUpdate($event)">
-  </app-weekly-tracker>
-</div>
+      <app-weekly-tracker 
+        [overdueTracks]="overdueTracking()" 
+        (updateSubmitted)="onWeeklyUpdate($event)">
+      </app-weekly-tracker>
+    </div>
   </div>
 </div>

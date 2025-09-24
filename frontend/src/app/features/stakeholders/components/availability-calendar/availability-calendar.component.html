@@ -1,0 +1,19 @@
+<h2 class="text-xl font-semibold text-gray-700 mb-2">Filtrar por Stakeholder</h2>
+<div class="flex flex-wrap gap-2 mb-4">
+  @for (stakeholder of stakeholders(); track stakeholder.id) {
+    <button 
+      (click)="toggleStakeholder(stakeholder.id)"
+      class="px-4 py-2 text-sm font-medium rounded-full transition-colors"
+      [ngClass]="isSelected(stakeholder.id) ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+    >
+      {{ stakeholder.name }}
+    </button>
+  }
+</div>
+
+<div class="bg-white rounded-lg shadow-md p-4">
+  <full-calendar 
+    [options]="calendarOptions"
+    [events]="calendarEvents()"
+  ></full-calendar>
+</div>

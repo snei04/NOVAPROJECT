@@ -237,3 +237,15 @@ export const createBoardAssociation = async (req, res) => {
   }
 };
 
+export const getDashboard = async (req, res)=> {
+  try {
+    // 1. Extrae el ID del tablero de la URL.
+    const { id } = req.params;
+    // 2. Llama al servicio para que haga el trabajo de buscar y calcular los datos.
+    const dashboardData = await boardService.getDashboardData(id);
+    // 3. Envía los datos obtenidos de vuelta al frontend.
+    res.status(200).json(dashboardData);
+  } catch (error) {
+    res.status(500).json({ message: 'Error getting dashboard data.' });
+  }
+};

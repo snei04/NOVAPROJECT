@@ -9,6 +9,7 @@ import meRoutes from './routes/me.routes.js';
 import labelRoutes from './routes/label.routes.js'; 
 import cors from 'cors';
 import './scheduler.js';
+import stakeholderRoutes from './routes/stakeholder.routes.js';
 
 // Cargamos las variables de entorno
 dotenv.config();
@@ -27,10 +28,12 @@ app.use('/api/v1/auth', authRoutes); // <-- 2. Usa las rutas de auth
 // Montamos las rutas de usuarios en el prefijo /api/v1/users
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/boards', boardRoutes); 
+app.use('/api/v1', stakeholderRoutes);
 app.use('/api/v1/lists', listRoutes);
 app.use('/api/v1/cards', cardRoutes);
 app.use('/api/v1/me', meRoutes);
 app.use('/api/v1/labels', labelRoutes);
+
 
 // Definimos el puerto en el que escuchará el servidor
 const PORT = process.env.PORT || 3000;

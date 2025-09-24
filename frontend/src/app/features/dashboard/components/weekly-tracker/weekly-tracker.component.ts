@@ -13,8 +13,7 @@ export class WeeklyTrackerComponent {
   @Output() updateSubmitted = new EventEmitter<any>();
 
   submitUpdate(project: ProjectMetrics) {
-    // Aquí iría la lógica para abrir un modal o enviar una actualización.
-    console.log('Update submitted for:', project.name);
-    this.updateSubmitted.emit({ projectId: project.id, status: 'updated' });
-  }
+  console.log('Update submitted for:', project.boardTitle);
+  this.updateSubmitted.emit({ projectId: project.boardId, status: 'updated' });
+}
 }

@@ -1,10 +1,12 @@
 // src/app/app.component.ts
 import { Component } from '@angular/core';
-import { environment } from '../environments/environment'; // 1. Importa environment
+import { RouterModule } from '@angular/router'; // <-- Importa RouterModule
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
-  // 2. Modifica el template para añadir el footer con la versión
+  standalone: true, // <-- AÑADIDO
+  imports: [RouterModule], // <-- AÑADIDO para que <router-outlet> funcione
   template: `
     <router-outlet></router-outlet>
     
@@ -14,6 +16,5 @@ import { environment } from '../environments/environment'; // 1. Importa environ
   `,
 })
 export class AppComponent {
-  // 3. Añade la variable y asígnale el valor de la versión
   public appVersion: string = environment.version; 
 }

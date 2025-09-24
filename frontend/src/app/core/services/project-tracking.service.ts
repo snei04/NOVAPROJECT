@@ -1,68 +1,58 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { tap } from 'rxjs';
+import { Observable } from 'rxjs';
 
-// Define the interfaces for your data models here or import them
-export interface WeeklyUpdate {
-  date: Date;
-  summary: string;
-}
-
-export interface KPI {
-  name: string;
-  value: number;
-  target: number;
-}
-
+// --- INTERFAZ DE DATOS CORREGIDA ---
 export interface ProjectMetrics {
-  id: string;
-  name: string;
+  boardId: string;
+  boardTitle: string;
+  totalCards: number;
+  completedCards: number;
   progress: number;
-  budget: number;
-  budgetUsed: number;
-  startDate: Date;
-  endDate: Date;
-  status: 'planning' | 'in-progress' | 'at-risk' | 'completed';
-  weeklyUpdates: WeeklyUpdate[];
-  kpis: KPI[];
+  status?: 'in-progress' | 'at-risk' | 'completed'; // Asumimos que el backend puede enviar esto
 }
 
 @Injectable({ providedIn: 'root' })
 export class ProjectTrackingService {
   private http = inject(HttpClient);
 
-  // State Signal
-  private projectsSignal = signal<ProjectMetrics[]>([]);
+  // --- SIGNALS DE ESTADO ---
+  private dashboardDataSignal = signal<ProjectMetrics | null>(null);
+  private selectedStatus = signal<'all' | 'in-progress' | 'at-risk' | 'completed'>('all');
 
-  // Public Readonly Signals
-  public projects = this.projectsSignal.asReadonly();
-  
-  // Computed signals for automatic metrics
-  public totalProjects = computed(() => this.projectsSignal().length);
-  public atRiskProjects = computed(() => 
-    this.projectsSignal().filter(p => p.status === 'at-risk').length
-  );
-  public avgProgress = computed(() => {
-    const projects = this.projectsSignal();
-    return projects.length > 0 
-      ? projects.reduce((sum, p) => sum + p.progress, 0) / projects.length 
-      : 0;
+  // --- SIGNALS PÚBLICOS Y CALCULADOS ---
+  public projects = computed(() => {
+    const data = this.dashboardDataSignal();
+    return data ? [data] : []; // Previene valores nulos en el array
   });
+  
+  public filteredProjects = computed(() => {
+    const projects = this.projects(); // Usa el signal que ya previene nulos
+    const status = this.selectedStatus();
+    if (status === 'all' || !status) {
+      return projects;
+    }
+    return projects.filter(p => p.status === status);
+  });
+  
+  public totalProjects = computed(() => this.projects().length);
+  
+  public atRiskProjects = computed(() => 
+    this.projects().filter(p => p.status === 'at-risk').length
+  );
+  
+  public avgProgress = computed(() => this.dashboardDataSignal()?.progress || 0);
 
-  // Method to load project data from the backend
-  loadProjects() {
-    // AHORA HACEMOS UNA LLAMADA REAL A LA API
-    // El proxy se encarga de redirigir /api/* a tu backend
-    this.http.get<ProjectMetrics[]>('/api/projects/dashboard') // Asumiendo un endpoint que devuelve todos los dashboards
-      .subscribe({
-        next: (projects) => {
-          this.projectsSignal.set(projects); // Actualizamos el signal con los datos reales
-        },
-        error: (err) => {
-          console.error('Error al cargar los proyectos:', err);
-          this.projectsSignal.set([]); // En caso de error, vaciamos la lista
-        }
-      });
+  // --- MÉTODOS PÚBLICOS ---
+  getBoardDashboard(boardId: string): Observable<ProjectMetrics> {
+    const url = `/api/boards/${boardId}/dashboard`;
+    return this.http.get<ProjectMetrics>(url).pipe(
+      tap(data => this.dashboardDataSignal.set(data))
+    );
+  }
+
+  filterByStatus(status: 'all' | 'in-progress' | 'at-risk' | 'completed') {
+    this.selectedStatus.set(status);
   }
 }
