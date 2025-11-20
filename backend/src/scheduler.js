@@ -1,4 +1,3 @@
-// src/scheduler.js
 import cron from 'node-cron';
 import pool from './config/database.js';
 import { sendMail } from './services/mail.service.js';

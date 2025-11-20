@@ -109,6 +109,34 @@ export class BoardsService {
       context: checkToken(),
     });
   }
+
+  loadBoards(): Observable<Board[]> {
+    return this.http.get<Board[]>(`${this.apiUrl}/api/v1/boards`, {
+      context: checkToken(),
+    });
+  }
+
+  createList(title: string, boardId: string, position: number): Observable<List> {
+    return this.http.post<List>(`${this.apiUrl}/api/v1/lists`, {
+      title,
+      boardId,
+      position
+    }, {
+      context: checkToken(),
+    });
+  }
+
+  createCard(cardData: {
+    title: string;
+    description: string;
+    position: number;
+    listId: string;
+    boardId: string;
+  }): Observable<Card> {
+    return this.http.post<Card>(`${this.apiUrl}/api/v1/cards`, cardData, {
+      context: checkToken(),
+    });
+  }
   
 }
 

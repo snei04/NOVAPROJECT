@@ -4,8 +4,14 @@ import { AuthGuard } from '@guards/auth.guard';
 export const LAYOUT_ROUTES: Routes = [
   {
     path: '',
-    redirectTo: 'boards',
+    redirectTo: 'project-dashboard',
     pathMatch: 'full'
+  },
+  {
+    path: 'project-dashboard',
+    canActivate: [ AuthGuard ],
+    loadComponent: () => 
+      import('../../features/project-dashboard/project-dashboard.component').then(m => m.ProjectDashboardComponent),
   },
   {
     path: 'dashboard/:boardId',
@@ -39,7 +45,19 @@ export const LAYOUT_ROUTES: Routes = [
     path: 'stakeholders',
     canActivate: [ AuthGuard ],
     loadComponent: () => 
-      import('../../features/stakeholders/components/availability-calendar/availability-calendar.component').then(m => m.AvailabilityCalendarComponent),
+      import('../../features/stakeholder-management/components/availability-calendar.component').then(m => m.AvailabilityCalendarComponent),
+  },
+  {
+    path: 'risk-management',
+    canActivate: [ AuthGuard ],
+    loadComponent: () => 
+      import('../../features/risk-management/risk-management.component').then(m => m.RiskManagementComponent),
+  },
+  {
+    path: 'deliverable-tracker',
+    canActivate: [ AuthGuard ],
+    loadComponent: () => 
+      import('../../features/deliverable-tracker/deliverable-tracker.component').then(m => m.DeliverableTrackerComponent),
   },
 
 ];

@@ -13,6 +13,13 @@
         <div class="flex items-center">
           <ul class="flex items-center space-x-2 text-sm font-medium">
             <li>
+              <a routerLink="/app/project-dashboard" 
+                 class="block py-3 px-4 text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors font-semibold"
+                 title="Dashboard de Progreso - Solución IMEVI">
+                📊 Dashboard
+              </a>
+            </li>
+            <li>
               <app-btn
                 [color]="navBarBackgroundColor"
                 (click)="isOpenOverlayBoards = !isOpenOverlayBoards"
@@ -35,6 +42,20 @@
             </li>
             <li>
               <a routerLink="/app/stakeholders" class="block py-3 px-4 text-white">Stakeholders</a>
+            </li>
+            <li>
+              <a routerLink="/app/risk-management" 
+                 class="block py-3 px-4 text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors font-semibold"
+                 title="Risk Management Inteligente - Solución IMEVI">
+                ⚠️ Riesgos
+              </a>
+            </li>
+            <li>
+              <a routerLink="/app/deliverable-tracker" 
+                 class="block py-3 px-4 text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+                 title="Deliverable Tracker Avanzado - Solución IMEVI">
+                📋 Entregables
+              </a>
             </li>
             <li>
               <app-btn

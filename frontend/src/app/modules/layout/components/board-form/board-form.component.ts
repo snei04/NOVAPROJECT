@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { FormBuilder, Validators, FormControl, ReactiveFormsModule } from '@angular/forms'; // <-- NUEVO
 
 import { BoardsService } from '@services/boards.service';
+import { BoardInitializationService } from '@services/board-initialization.service';
 import { Colors } from '@models/colors.model';
 import { ButtonComponent } from '@shared/components/button/button.component'; // <-- NUEVO
 
@@ -28,17 +29,33 @@ export class BoardFormComponent {
   constructor(
     private formBuilder: FormBuilder,
     private boardService: BoardsService,
+    private boardInitService: BoardInitializationService,
     private router: Router
   ) { }
 
   doSave() {
     if (this.form.valid) {
       const { title, backgroundColor } = this.form.getRawValue();
-      this.boardService.createBoard(title, backgroundColor)
-      .subscribe(board => {
-        this.closeOverlay.next(false);
-        this.router.navigate(['/app/boards', board.id]);
-      })
+      
+      // Usar el servicio de inicialización para crear tablero con contenido
+      this.boardInitService.createBoardWithInitialContent(title, backgroundColor)
+      .subscribe({
+        next: (board) => {
+          this.closeOverlay.next(false);
+          this.router.navigate(['/app/boards', board.id]);
+          console.log('✅ Tablero creado con contenido inicial:', board.title);
+        },
+        error: (error) => {
+          console.error('❌ Error creando tablero:', error);
+          // Fallback: crear tablero sin contenido inicial
+          this.boardService.createBoard(title, backgroundColor)
+          .subscribe(board => {
+            this.closeOverlay.next(false);
+            this.router.navigate(['/app/boards', board.id]);
+            console.log('⚠️ Tablero creado sin contenido inicial (fallback)');
+          });
+        }
+      });
     } else {
       this.form.markAllAsTouched();
     }

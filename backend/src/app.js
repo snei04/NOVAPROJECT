@@ -10,6 +10,8 @@ import labelRoutes from './routes/label.routes.js';
 import cors from 'cors';
 import './scheduler.js';
 import stakeholderRoutes from './routes/stakeholder.routes.js';
+import './config/database.js';  // Aseguramos la conexión a la base de datos
+// Importamos y ejecutamos el scheduler
 
 // Cargamos las variables de entorno
 dotenv.config();
