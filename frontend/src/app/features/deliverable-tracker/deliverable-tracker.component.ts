@@ -139,11 +139,20 @@ export class DeliverableTrackerComponent implements OnInit {
   }
 
   getTypeIcon(type: string): string {
-      switch(type) {
-          case 'code': return '💻';
-          case 'design': return '🎨';
-          case 'report': return '📄';
-          default: return '📝';
-      }
+    switch(type) {
+        case 'document': return '📄';
+        case 'code': return '💻';
+        case 'design': return '🎨';
+        case 'report': return '📊';
+        default: return '📎';
+    }
+  }
+
+  getEvidenceLink(url: string | undefined): string {
+    if (!url) return '#';
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return `https://${url}`;
   }
 }

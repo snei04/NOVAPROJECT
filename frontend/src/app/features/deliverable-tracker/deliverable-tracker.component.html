@@ -66,7 +66,11 @@
                       <td class="px-6 py-4">
                           <div class="font-medium text-gray-900 dark:text-white">{{ d.title }}</div>
                           <div class="text-sm text-gray-500 truncate max-w-xs">{{ d.description }}</div>
-                          <a *ngIf="d.evidenceLink || d.evidence_link" [href]="d.evidenceLink || d.evidence_link" target="_blank" class="text-xs text-blue-500 hover:underline mt-1 block">
+                          <a *ngIf="d.evidenceLink || d.evidence_link" 
+                             [href]="getEvidenceLink(d.evidenceLink || d.evidence_link)" 
+                             target="_blank" 
+                             rel="noopener noreferrer"
+                             class="text-xs text-blue-500 hover:underline mt-1 block">
                              🔗 Ver Evidencia
                           </a>
                       </td>
