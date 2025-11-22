@@ -1,0 +1,50 @@
+<div class="document-detail-page h-full bg-white dark:bg-gray-900">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex items-center justify-center h-screen">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+
+  <!-- Document Content -->
+  <div *ngIf="!isLoading && document" class="max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="sticky top-0 z-20 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button (click)="router.navigate(['/app/documents'])" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+          ← Volver
+        </button>
+        <span class="text-sm" [ngClass]="{
+          'text-green-600': saveStatus === 'saved',
+          'text-yellow-600': saveStatus === 'saving',
+          'text-red-600': saveStatus === 'error'
+        }">
+          {{ saveStatus === 'saved' ? '✓ Guardado' : saveStatus === 'saving' ? '⏳ Guardando...' : '⚠ Error al guardar' }}
+        </span>
+      </div>
+      <div class="flex gap-2">
+        <button (click)="exportDocument()" class="btn-sm btn-secondary">
+          📊 Exportar
+        </button>
+        <button (click)="archiveDocument()" class="btn-sm btn-danger">
+          🗑️ Archivar
+        </button>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div class="p-8">
+      <input 
+        type="text"
+        [value]="document.title"
+        (blur)="onTitleChange($any($event.target).value)"
+        class="w-full text-4xl font-bold border-none focus:outline-none bg-transparent text-gray-900 dark:text-gray-100"
+        placeholder="Sin título">
+    </div>
+
+    <!-- Editor -->
+    <app-editor
+      [initialContent]="document.content"
+      [documentId]="document.id"
+      (contentChange)="onContentChange($event)">
+    </app-editor>
+  </div>
+</div>

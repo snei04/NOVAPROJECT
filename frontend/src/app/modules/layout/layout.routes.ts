@@ -8,6 +8,12 @@ export const LAYOUT_ROUTES: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'project-dashboard/create',
+    canActivate: [ AuthGuard ],
+    loadComponent: () => 
+      import('../../features/project-dashboard/components/create-project-wizard/create-project-wizard.component').then(m => m.CreateProjectWizardComponent),
+  },
+  {
     path: 'project-dashboard',
     canActivate: [ AuthGuard ],
     loadComponent: () => 
@@ -17,7 +23,7 @@ export const LAYOUT_ROUTES: Routes = [
     path: 'dashboard/:boardId',
     canActivate: [ AuthGuard ],
     loadComponent: () => 
-      import('../../features/dashboard/components/progress-dashboard/progress-dashboard.component').then(m => m.ProgressDashboardComponent),
+      import('../../features/dashboard/dashboard.component').then(m => m.DashboardComponent),
   },
   {
     path: 'boards',
@@ -45,13 +51,13 @@ export const LAYOUT_ROUTES: Routes = [
     path: 'stakeholders',
     canActivate: [ AuthGuard ],
     loadComponent: () => 
-      import('../../features/stakeholder-management/components/availability-calendar.component').then(m => m.AvailabilityCalendarComponent),
+      import('../../features/stakeholder-management/components/stakeholder-dashboard/stakeholder-dashboard.component').then(m => m.StakeholderDashboardComponent),
   },
   {
     path: 'risk-management',
     canActivate: [ AuthGuard ],
     loadComponent: () => 
-      import('../../features/risk-management/risk-management.component').then(m => m.RiskManagementComponent),
+      import('../../features/risk-management/components/risk-dashboard/risk-dashboard.component').then(m => m.RiskDashboardComponent),
   },
   {
     path: 'deliverable-tracker',
@@ -59,5 +65,12 @@ export const LAYOUT_ROUTES: Routes = [
     loadComponent: () => 
       import('../../features/deliverable-tracker/deliverable-tracker.component').then(m => m.DeliverableTrackerComponent),
   },
+  {
+    path: 'documents',
+    canActivate: [ AuthGuard ],
+    loadChildren: () => 
+      import('../../features/documents/documents.module').then(m => m.DocumentsModule),
+  },
 
 ];
+// Force recompile

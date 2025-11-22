@@ -279,17 +279,56 @@ openAssociateDialog() {
     }
   }
 
-toggleCardCompletion(card: Card) {
+toggleCardCompletion(card: Card, currentListId: string | number) {
     const newStatus = !card.isCompleted;
+
+    // Si se marca como completada y estamos en un tablero válido
+    if (newStatus && this.board) {
+      const completedList = this.board.lists.find(l => l.title === 'Completado');
+      const currentList = this.board.lists.find(l => l.id === currentListId);
+
+      // Si existe la lista "Completado", la lista actual, y no estamos ya en "Completado"
+      if (completedList && currentList && completedList.id !== currentListId) {
+        
+        // 1. Llamada al backend para actualizar estado y mover de lista
+        this.cardsService.update(card.id, { 
+          isCompleted: true, 
+          listId: completedList.id 
+        }).subscribe({
+          next: () => {
+            // 2. Actualizar UI (Mover visualmente la tarjeta)
+            const index = currentList.cards.findIndex(c => c.id === card.id);
+            if (index > -1) {
+              currentList.cards.splice(index, 1); // Quitar de lista actual
+            }
+            
+            card.isCompleted = true;
+            // card.listId no existe en la interfaz Card, usamos list si es necesario
+            // card.list = completedList; // Opcional si la interfaz lo requiere
+            completedList.cards.push(card); // Añadir a Completado
+
+            this.toastr.success('Tarea movida a Completado');
+            this.getActivities(this.board!.id);
+          },
+          error: () => {
+            this.toastr.error('Error al mover la tarea');
+            card.isCompleted = false; // Revertir check visualmente si falla
+          }
+        });
+        return; // Terminamos aquí
+      }
+    }
+
+    // Caso normal: Desmarcar o no existe lista "Completado" -> Solo actualizar estado
     this.cardsService.update(card.id, { isCompleted: newStatus })
       .subscribe({
         next: () => {
-          // Actualizamos el estado local para que el cambio se vea al instante
           card.isCompleted = newStatus;
-          this.toastr.success('Estado de la tarea actualizado');
+          this.toastr.success('Estado actualizado');
         },
         error: () => {
           this.toastr.error('No se pudo actualizar la tarea');
+          card.isCompleted = !newStatus; // Revertir
         }
       });
   }

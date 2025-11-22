@@ -1,0 +1,118 @@
+<div class="wizard-container bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 max-w-3xl mx-auto my-8">
+  
+  <!-- Progress Bar -->
+  <div class="mb-8">
+    <div class="flex justify-between mb-2">
+      <span class="text-sm font-medium" [class.text-blue-600]="currentStep >= 1">1. Proyecto</span>
+      <span class="text-sm font-medium" [class.text-blue-600]="currentStep >= 2">2. Equipo</span>
+      <span class="text-sm font-medium" [class.text-blue-600]="currentStep >= 3">3. Métricas</span>
+    </div>
+    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+      <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" [style.width.%]="(currentStep / totalSteps) * 100"></div>
+    </div>
+  </div>
+
+  <!-- Step 1: Project Details -->
+  <div *ngIf="currentStep === 1" class="step-content animate-fade-in">
+    <h2 class="text-2xl font-bold mb-6 dark:text-white">Definir Proyecto</h2>
+    
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre del Proyecto</label>
+      <input [(ngModel)]="projectData.title" type="text" class="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Ej: Lanzamiento Q3">
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripción (Opcional)</label>
+      <textarea [(ngModel)]="projectData.description" class="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white" rows="3"></textarea>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Color Identificativo</label>
+      <div class="flex gap-2">
+        <button *ngFor="let color of availableColors" 
+          (click)="projectData.backgroundColor = color"
+          [class.ring-2]="projectData.backgroundColor === color"
+          [class.ring-offset-2]="projectData.backgroundColor === color"
+          class="w-8 h-8 rounded-full focus:outline-none transition-transform hover:scale-110"
+          [ngClass]="'bg-' + color + '-500'">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Stakeholders -->
+  <div *ngIf="currentStep === 2" class="step-content animate-fade-in">
+    <h2 class="text-2xl font-bold mb-6 dark:text-white">Stakeholders Clave</h2>
+    <p class="text-gray-500 mb-4 text-sm">Añade a las personas interesadas o responsables.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+      <input [(ngModel)]="newStakeholder.name" placeholder="Nombre" class="p-2 border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+      <input [(ngModel)]="newStakeholder.role" placeholder="Rol (ej: Sponsor)" class="p-2 border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+      <input [(ngModel)]="newStakeholder.email" placeholder="Email" class="p-2 border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+      
+      <select [(ngModel)]="newStakeholder.priority" class="p-2 border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+        <option value="low">Baja</option>
+        <option value="medium">Media</option>
+        <option value="high">Alta</option>
+      </select>
+      
+      <button (click)="addStakeholder()" class="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 md:col-span-2">
+        + Añadir
+      </button>
+    </div>
+
+    <ul class="space-y-2">
+      <li *ngFor="let s of stakeholders; let i = index" class="flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-2 rounded">
+        <div>
+          <span class="font-bold dark:text-white">{{ s.name }}</span>
+          <span class="text-xs text-gray-500 ml-2">({{ s.role }})</span>
+        </div>
+        <button (click)="removeStakeholder(i)" class="text-red-500 hover:text-red-700">×</button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Step 3: Milestones -->
+  <div *ngIf="currentStep === 3" class="step-content animate-fade-in">
+    <h2 class="text-2xl font-bold mb-6 dark:text-white">Métricas y Hitos (KPIs)</h2>
+    <p class="text-gray-500 mb-4 text-sm">Define los objetivos principales o fechas de entrega.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+      <input [(ngModel)]="newMilestone.title" placeholder="Hito (ej: MVP Completado)" class="p-2 border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white md:col-span-2">
+      <input [(ngModel)]="newMilestone.dueDate" type="date" class="p-2 border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+      <input [(ngModel)]="newMilestone.description" placeholder="Descripción métrica" class="p-2 border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white md:col-span-2">
+      
+      <button (click)="addMilestone()" class="bg-green-600 text-white p-2 rounded hover:bg-green-700">
+        + Añadir
+      </button>
+    </div>
+
+    <ul class="space-y-2">
+      <li *ngFor="let m of milestones; let i = index" class="flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-2 rounded">
+        <div>
+          <span class="font-bold dark:text-white">{{ m.title }}</span>
+          <span class="text-xs text-gray-500 ml-2">({{ m.dueDate }})</span>
+        </div>
+        <button (click)="removeMilestone(i)" class="text-red-500 hover:text-red-700">×</button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex justify-between mt-8 pt-4 border-t border-gray-200 dark:border-gray-700">
+    <button 
+      (click)="prevStep()" 
+      [disabled]="currentStep === 1 || isLoading"
+      class="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50 dark:text-gray-400">
+      Atrás
+    </button>
+    
+    <button 
+      (click)="nextStep()" 
+      [disabled]="isLoading"
+      class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50">
+      <span *ngIf="isLoading" class="animate-spin">↻</span>
+      {{ currentStep === totalSteps ? 'Finalizar Proyecto' : 'Siguiente' }}
+    </button>
+  </div>
+</div>

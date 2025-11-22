@@ -1,0 +1,23 @@
+<div class="editor-wrapper bg-white dark:bg-gray-900 min-h-screen">
+  <!-- Menu Bar -->
+  <app-menu-bar 
+    *ngIf="editor"
+    [editor]="editor"
+    (insertDatabase)="insertDatabase($event)">
+  </app-menu-bar>
+
+  <!-- Editor Container -->
+  <div #editorContainer class="editor-content"></div>
+
+  <!-- Databases -->
+  <div *ngIf="databases.length > 0" class="databases-container p-4 space-y-6">
+    <div *ngFor="let database of databases; let i = index" class="database-wrapper">
+      <app-database-view
+        [database]="database"
+        [databaseIndex]="i"
+        (databaseChange)="updateDatabase(i, $event)"
+        (databaseDelete)="deleteDatabase(i)">
+      </app-database-view>
+    </div>
+  </div>
+</div>

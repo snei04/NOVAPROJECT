@@ -7,7 +7,6 @@ import { environment } from '../environments/environment';
   selector: 'app-root',
   standalone: true,
   imports: [RouterModule],
-  // 👇 UPDATE THE TEMPLATE HERE 👇
   template: `
     <div class="flex flex-col min-h-screen">
       <main class="flex-grow">
@@ -16,7 +15,7 @@ import { environment } from '../environments/environment';
 
       <footer class="fixed bottom-0 left-0 right-0 bg-zinc-800 text-gray-300 px-4 py-2 flex justify-between items-center text-sm z-50">
         <div class="footer-left">
-          <p>Todos los derechos reservados 2025 | Desarrollado por IMEVISAS</p> 
+          <p>Todos los derechos reservados 2025 | Desarrollado por IMEVISAS desde el equipo de TI</p> 
         </div>
         <div class="footer-right">
           <p>Version: v{{ appVersion }}</p>

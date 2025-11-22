@@ -19,9 +19,22 @@ export const protect = (req, res, next) => {
 
       // 4. Continuamos a la siguiente función (el controlador)
       next();
+      return;
     } catch (error) {
-      console.error(error);
-      res.status(401).json({ message: 'No autorizado, el token falló' });
+      // Manejo limpio de errores JWT conocidos
+      if (error.name === 'TokenExpiredError') {
+        res.status(401).json({ message: 'Sesión expirada' });
+        return;
+      }
+      if (error.name === 'JsonWebTokenError') {
+        res.status(401).json({ message: 'Token inválido' });
+        return;
+      }
+      
+      // Solo loguear errores inesperados
+      console.error('Auth Error:', error.message);
+      res.status(401).json({ message: 'No autorizado' });
+      return;
     }
   }
 

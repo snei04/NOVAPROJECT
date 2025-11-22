@@ -461,36 +461,65 @@ export class MetricsService {
   // Método para cargar datos reales con fallback a mock
   async loadRealData(): Promise<void> {
     try {
-      // Intentar cargar datos reales de la API
-      const metricsObservable = this.dataConfig.requestWithFallback(
-        () => this.http.get<ProjectMetrics>(`${environment.API_URL}/api/v1/projects/metrics`),
-        this.getMockMetrics()
-      );
+      console.log('📡 Cargando métricas reales desde backend...');
+      const projectId = 1; // Usamos ID 1 por defecto para tu proyecto
 
-      const milestonesObservable = this.dataConfig.requestWithFallback(
-        () => this.http.get<Milestone[]>(`${environment.API_URL}/api/v1/projects/milestones`),
-        this.getMockMilestones()
-      );
+      // 1. Cargar métricas calculadas
+      this.http.get<any>(`${environment.API_URL}/api/milestones/metrics/${projectId}`)
+        .subscribe({
+          next: (response) => {
+            if (response.success) {
+              const data = response.data;
+              
+              // Mapear respuesta del backend a la interfaz ProjectMetrics
+              const metrics: ProjectMetrics = {
+                ...this.getMockMetrics(), // Usar base mock para datos no implementados aún
+                overallProgress: data.progress.current,
+                timeline: {
+                  ...this.getMockMetrics().timeline,
+                  milestonesCompleted: data.milestones.completed,
+                  totalMilestones: data.milestones.total
+                }
+              };
+              
+              this.projectMetricsSignal.set(metrics);
+              console.log('✅ Métricas cargadas:', metrics);
+            }
+          },
+          error: (err) => console.error('Error loading metrics:', err)
+        });
 
-      const dependenciesObservable = this.dataConfig.requestWithFallback(
-        () => this.http.get<ProjectDependency[]>(`${environment.API_URL}/api/v1/projects/dependencies`),
-        this.getMockDependencies()
-      );
+      // 2. Cargar milestones reales
+      this.http.get<any>(`${environment.API_URL}/api/milestones/project/${projectId}`)
+        .subscribe({
+          next: (response) => {
+            if (response.success) {
+              // Mapear milestones del backend a la interfaz Milestone del frontend
+              const realMilestones: Milestone[] = response.data.map((m: any) => ({
+                id: m.id,
+                title: m.title,
+                description: m.description || '',
+                targetDate: new Date(m.targetDate),
+                status: m.status === 'in_progress' ? 'in_progress' : 
+                        m.status === 'completed' ? 'completed' : 'pending',
+                progress: m.progressPercentage,
+                owner: 'System', // Placeholder
+                dependencies: [],
+                deliverables: []
+              }));
 
-      // Cargar datos en paralelo
-      const [metrics, milestones, dependencies] = await Promise.all([
-        firstValueFrom(metricsObservable),
-        firstValueFrom(milestonesObservable),
-        firstValueFrom(dependenciesObservable)
-      ]);
+              this.milestonesSignal.set(realMilestones);
+              console.log('✅ Milestones cargados:', realMilestones);
+              
+              // Generar alertas basadas en datos reales
+              this.generateCriticalAlerts();
+            }
+          },
+          error: (err) => console.error('Error loading milestones:', err)
+        });
 
-      // Actualizar signals
-      this.projectMetricsSignal.set(metrics);
-      this.milestonesSignal.set(milestones);
-      this.dependenciesSignal.set(dependencies);
-
-      // Generar alertas críticas basadas en datos reales
-      this.generateCriticalAlerts();
+      // Cargar dependencias (por ahora mock, pendiente endpoint)
+      this.dependenciesSignal.set(this.getMockDependencies());
 
     } catch (error) {
       console.error('Error loading real data, using mock data:', error);

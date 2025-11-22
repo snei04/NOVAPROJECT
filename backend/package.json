@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "init:documents": "node src/scripts/init-documents-table.js",
+    "init:novaproject": "node src/scripts/init-novaproject-simple.js"
   },
   "keywords": [],
   "author": "",

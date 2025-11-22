@@ -3,11 +3,26 @@ import pool from '../config/database.js';
 
 // Función para obtener el boardId desde diferentes tipos de rutas
 const getBoardIdFromRequest = async (req) => {
-  let boardId = req.params.boardId;
-  if (!boardId) {
-    const id = req.params.id; // Puede ser cardId o listId
-    if (!id) return null;
+  // 1. Caso explícito: boardId en params (ej: /boards/:boardId/...)
+  if (req.params.boardId) {
+    return req.params.boardId;
+  }
 
+  // 2. Caso ruta principal de boards: /api/v1/boards/:id
+  // Si la URL base contiene 'boards' y hay un parámetro 'id', asumimos que ES el boardId.
+  // Esto cubre GET /boards/:id, PUT /boards/:id, DELETE /boards/:id
+  if (req.baseUrl.endsWith('/boards') && req.params.id) {
+    // Validación extra: asegurar que no estamos en una sub-ruta que use :id para otra cosa
+    // Pero en board.routes.js, :id siempre es el boardId para las rutas montadas en /boards
+    return req.params.id;
+  }
+
+  // 3. Casos indirectos (Cards/Lists)
+  // Si estamos aquí, probablemente estamos en /api/v1/cards/:id o /api/v1/lists/:id
+  const id = req.params.id;
+  if (!id) return null;
+
+  try {
     // Busca el boardId a través de la tarjeta
     let [rows] = await pool.query('SELECT l.board_id FROM cards c JOIN lists l ON c.list_id = l.id WHERE c.id = ?', [id]);
     if (rows.length > 0) return rows[0].board_id;
@@ -15,8 +30,12 @@ const getBoardIdFromRequest = async (req) => {
     // Si no, busca a través de la lista
     [rows] = await pool.query('SELECT board_id FROM lists WHERE id = ?', [id]);
     if (rows.length > 0) return rows[0].board_id;
+  } catch (error) {
+    console.error('Error buscando boardId indirecto:', error);
+    return null;
   }
-  return boardId;
+
+  return null;
 };
 
 export const isBoardMember = async (req, res, next) => {

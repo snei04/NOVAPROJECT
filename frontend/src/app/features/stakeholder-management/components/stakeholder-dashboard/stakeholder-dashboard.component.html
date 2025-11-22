@@ -1,0 +1,202 @@
+<div class="p-6 bg-gray-50 min-h-screen dark:bg-gray-900 dark:text-gray-100">
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold">Gestión de Stakeholders y Compromisos</h1>
+    <p class="text-gray-600 dark:text-gray-400">Visualiza el estado de relaciones y acuerdos por proyecto.</p>
+  </div>
+
+  <!-- Project Selector -->
+  <div class="mb-8 flex gap-2 overflow-x-auto pb-2">
+    <button 
+      *ngFor="let project of projects"
+      (click)="selectProject(project)"
+      [class.bg-blue-600]="selectedProject?.id === project.id"
+      [class.text-white]="selectedProject?.id === project.id"
+      [class.bg-white]="selectedProject?.id !== project.id"
+      class="px-4 py-2 rounded-full border border-gray-200 shadow-sm hover:bg-blue-50 dark:bg-gray-800 dark:border-gray-700 transition-colors whitespace-nowrap">
+      {{ project.title }}
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="flex justify-center p-12">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+
+  <div *ngIf="!isLoading && selectedProject" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Columna 1: Stakeholders -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <h2 class="text-lg font-semibold mb-4 flex items-center">
+        👥 Stakeholders
+        <span class="ml-2 text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{{ stakeholders.length }}</span>
+      </h2>
+      
+      <div class="space-y-3">
+        <div *ngFor="let s of stakeholders" class="p-3 border rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors">
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="font-medium">{{ s.name }}</h3>
+              <p class="text-sm text-gray-500">{{ s.role }}</p>
+            </div>
+            <span [ngClass]="{
+              'bg-red-100 text-red-800': s.priority === 'high',
+              'bg-yellow-100 text-yellow-800': s.priority === 'medium',
+              'bg-green-100 text-green-800': s.priority === 'low'
+            }" class="text-xs px-2 py-1 rounded-full">
+              {{ s.priority }}
+            </span>
+          </div>
+          <div class="mt-2 text-xs text-gray-400">
+            {{ s.contactInfo?.email }}
+          </div>
+        </div>
+        <div *ngIf="stakeholders.length === 0" class="text-center text-gray-500 py-8">
+          No hay stakeholders registrados.
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna 2: Reuniones -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold flex items-center">
+          📅 Reuniones
+          <span class="ml-2 text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{{ meetings.length }}</span>
+        </h2>
+        <div class="flex gap-2">
+          <button (click)="toggleCalendarView()" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200">
+            {{ showCalendar ? 'Lista' : 'Calendario' }}
+          </button>
+          <button (click)="openMeetingModal()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200">
+            + Agendar
+          </button>
+        </div>
+      </div>
+
+      <!-- Vista Lista -->
+      <div *ngIf="!showCalendar" class="space-y-4">
+        <div *ngFor="let m of meetings" class="relative pl-4 border-l-2 border-blue-200 dark:border-blue-900">
+          <div class="absolute -left-[5px] top-2 w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+          <h3 class="font-medium">{{ m.title }}</h3>
+          <p class="text-xs text-gray-500 mb-1">
+            {{ m.startTime | date:'medium' }}
+          </p>
+          <span [ngClass]="{
+            'bg-green-100 text-green-800': m.status === 'completed',
+            'bg-blue-100 text-blue-800': m.status === 'scheduled',
+            'bg-gray-100 text-gray-800': m.status === 'cancelled'
+          }" class="text-xs px-2 py-0.5 rounded">
+            {{ m.status }}
+          </span>
+        </div>
+        <div *ngIf="meetings.length === 0" class="text-center text-gray-500 py-8">
+          No hay reuniones programadas.
+        </div>
+      </div>
+
+      <!-- Vista Calendario -->
+      <div *ngIf="showCalendar" class="mt-2">
+        <full-calendar [options]="calendarOptions"></full-calendar>
+      </div>
+    </div>
+
+    <!-- Columna 3: Compromisos -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold flex items-center">
+          ✅ Compromisos
+          <span class="ml-2 text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{{ commitments.length }}</span>
+        </h2>
+        <button (click)="openCommitmentModal()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200">
+          + Agregar
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div *ngFor="let c of commitments" class="flex items-start gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+          <input type="checkbox" [checked]="c.status === 'completed'" class="mt-1 h-4 w-4 text-blue-600 rounded">
+          <div class="flex-1">
+            <p class="text-sm" [class.line-through]="c.status === 'completed'" [class.text-gray-400]="c.status === 'completed'">
+              {{ c.description }}
+            </p>
+            <div class="flex justify-between items-center mt-1">
+              <span class="text-xs text-gray-500">Vence: {{ c.dueDate | date:'shortDate' }}</span>
+              <span class="text-xs px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                {{ c.status === 'in_progress' ? 'En curso' : c.status }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="commitments.length === 0" class="text-center text-gray-500 py-8">
+          No hay compromisos pendientes.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Nueva Reunión -->
+<div *ngIf="showMeetingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+    <h3 class="text-xl font-bold mb-4 dark:text-white">Agendar Reunión</h3>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Título</label>
+        <input [(ngModel)]="newMeeting.title" type="text" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Ej: Kickoff">
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-300">Inicio</label>
+          <input [(ngModel)]="newMeeting.startTime" type="datetime-local" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-300">Fin</label>
+          <input [(ngModel)]="newMeeting.endTime" type="datetime-local" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 mt-6">
+      <button (click)="closeMeetingModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400">Cancelar</button>
+      <button (click)="createMeeting()" [disabled]="isCreatingMeeting" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+        {{ isCreatingMeeting ? 'Guardando...' : 'Agendar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nuevo Compromiso -->
+<div *ngIf="showCommitmentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+    <h3 class="text-xl font-bold mb-4 dark:text-white">Nuevo Compromiso</h3>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Descripción</label>
+        <input [(ngModel)]="newCommitment.description" type="text" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Ej: Enviar reporte de avance">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Reunión Asociada</label>
+        <select [(ngModel)]="newCommitment.meetingId" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <option *ngFor="let m of meetings" [value]="m.id">{{ m.title }} ({{ m.startTime | date:'shortDate' }})</option>
+        </select>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Fecha Límite</label>
+        <input [(ngModel)]="newCommitment.dueDate" type="date" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 mt-6">
+      <button (click)="closeCommitmentModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400">Cancelar</button>
+      <button (click)="createCommitment()" [disabled]="isCreatingCommitment" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+        {{ isCreatingCommitment ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>

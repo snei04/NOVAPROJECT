@@ -7,6 +7,12 @@ import listRoutes from './routes/list.routes.js';
 import cardRoutes from './routes/card.routes.js';
 import meRoutes from './routes/me.routes.js';
 import labelRoutes from './routes/label.routes.js'; 
+import documentsRoutes from './routes/documentsRoutes.js';
+import milestonesRoutes from './routes/milestones.routes.js';
+import stakeholdersRoutes from './routes/stakeholders.routes.js';
+import risksRoutes from './routes/risks.routes.js';
+import deliverablesRoutes from './routes/deliverables.routes.js';
+import dashboardRoutes from './routes/dashboard.routes.js';
 import cors from 'cors';
 import './scheduler.js';
 import stakeholderRoutes from './routes/stakeholder.routes.js';
@@ -30,11 +36,24 @@ app.use('/api/v1/auth', authRoutes); // <-- 2. Usa las rutas de auth
 // Montamos las rutas de usuarios en el prefijo /api/v1/users
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/boards', boardRoutes); 
+app.use('/api/v1/stakeholders', stakeholdersRoutes); // <-- AÑADIDO para compatibilidad V1
 app.use('/api/v1', stakeholderRoutes);
 app.use('/api/v1/lists', listRoutes);
 app.use('/api/v1/cards', cardRoutes);
 app.use('/api/v1/me', meRoutes);
 app.use('/api/v1/labels', labelRoutes);
+app.use('/api/documents', documentsRoutes);
+// NovaProject v2.0.0 Routes
+app.use('/api/milestones', milestonesRoutes);
+app.use('/api/stakeholders', stakeholdersRoutes);
+app.use('/api/risks', risksRoutes);
+app.use('/api/deliverables', deliverablesRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+
+// Health Check Endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Backend is running' });
+});
 
 
 // Definimos el puerto en el que escuchará el servidor

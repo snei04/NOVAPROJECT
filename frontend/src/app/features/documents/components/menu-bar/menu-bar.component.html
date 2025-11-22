@@ -1,0 +1,57 @@
+<div class="menu-bar sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2 flex flex-wrap gap-2">
+  <!-- Formato de texto -->
+  <div class="button-group flex gap-1">
+    <button (click)="toggleBold()" [class.active]="isActive('bold')" class="menu-btn" title="Negrita">
+      <strong>B</strong>
+    </button>
+    <button (click)="toggleItalic()" [class.active]="isActive('italic')" class="menu-btn" title="Cursiva">
+      <em>I</em>
+    </button>
+    <button (click)="toggleStrike()" [class.active]="isActive('strike')" class="menu-btn" title="Tachado">
+      <s>S</s>
+    </button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Encabezados -->
+  <div class="button-group flex gap-1">
+    <button (click)="setHeading(1)" [class.active]="isActive('heading', { level: 1 })" class="menu-btn" title="Título 1">
+      H1
+    </button>
+    <button (click)="setHeading(2)" [class.active]="isActive('heading', { level: 2 })" class="menu-btn" title="Título 2">
+      H2
+    </button>
+    <button (click)="setParagraph()" [class.active]="isActive('paragraph')" class="menu-btn" title="Párrafo">
+      P
+    </button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Listas -->
+  <div class="button-group flex gap-1">
+    <button (click)="toggleBulletList()" [class.active]="isActive('bulletList')" class="menu-btn" title="Lista">
+      • Lista
+    </button>
+    <button (click)="toggleTaskList()" [class.active]="isActive('taskList')" class="menu-btn" title="Lista de tareas">
+      ☐ Tareas
+    </button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Tabla -->
+  <div class="button-group flex gap-1">
+    <button (click)="insertTable()" class="menu-btn" title="Insertar tabla">
+      ⊞ Tabla
+    </button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Base de datos -->
+  <button (click)="onInsertDatabase()" class="menu-btn bg-blue-600 text-white hover:bg-blue-700" title="Insertar base de datos">
+    🗄️ Base de Datos
+  </button>
+</div>

@@ -1,0 +1,68 @@
+<aside 
+  class="sidebar h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300"
+  [class.collapsed]="isCollapsed"
+  [class.w-64]="!isCollapsed"
+  [class.w-16]="isCollapsed">
+  
+  <!-- Header -->
+  <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+    <h2 *ngIf="!isCollapsed" class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+      📚 Documentos
+    </h2>
+    <button 
+      (click)="toggleSidebar()"
+      class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+      [attr.aria-label]="isCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'">
+      <span *ngIf="!isCollapsed">◀</span>
+      <span *ngIf="isCollapsed">▶</span>
+    </button>
+  </div>
+
+  <!-- Nuevo Documento -->
+  <div class="p-4">
+    <button 
+      (click)="createNewDocument()"
+      class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+      [class.justify-center]="isCollapsed"
+      aria-label="Crear nuevo documento">
+      <span class="text-xl">+</span>
+      <span *ngIf="!isCollapsed">Nueva Página</span>
+    </button>
+  </div>
+
+  <!-- Lista de Documentos -->
+  <div class="overflow-y-auto" style="max-height: calc(100vh - 180px);">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="p-4 text-center text-gray-500 dark:text-gray-400">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+      <p *ngIf="!isCollapsed" class="mt-2 text-sm">Cargando...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && documents.length === 0" class="p-4 text-center text-gray-500 dark:text-gray-400">
+      <p *ngIf="!isCollapsed" class="text-sm">No hay documentos aún</p>
+      <p *ngIf="isCollapsed" class="text-2xl">📭</p>
+    </div>
+
+    <!-- Documents List -->
+    <ul *ngIf="!isLoading && documents.length > 0" class="space-y-1 p-2">
+      <li *ngFor="let doc of documents" class="document-item">
+        <button
+          (click)="navigateToDocument(doc.id)"
+          class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left"
+          [class.justify-center]="isCollapsed"
+          [attr.aria-label]="'Abrir documento: ' + doc.title">
+          <span class="text-xl flex-shrink-0">{{ getDocumentIcon(doc) }}</span>
+          <div *ngIf="!isCollapsed" class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+              {{ doc.title || 'Sin título' }}
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ doc.updatedAt | date:'short' }}
+            </p>
+          </div>
+        </button>
+      </li>
+    </ul>
+  </div>
+</aside>

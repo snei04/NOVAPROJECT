@@ -19,6 +19,16 @@ class BoardService {
         'INSERT INTO board_members (board_id, user_id, role) VALUES (?, ?, ?)',
         [boardId, userId, 'owner']
       );
+
+      // Crear listas por defecto
+      const defaultLists = ['Pendiente', 'En Progreso', 'Completado'];
+      for (let i = 0; i < defaultLists.length; i++) {
+        await connection.query(
+          'INSERT INTO lists (board_id, title, position) VALUES (?, ?, ?)',
+          [boardId, defaultLists[i], (i + 1) * 1000]
+        );
+      }
+
       await connection.commit();
       return { id: boardId, title, backgroundColor, user_id: userId };
     } catch (error) {

@@ -5,6 +5,7 @@ import { sendMail } from '../services/mail.service.js';
 
 export const createBoard = async (req, res) => {
   try {
+    console.log('Create Board Request:', { body: req.body, user: req.user });
     const { title, backgroundColor } = req.body;
     const userId = req.user.id;
 
@@ -152,13 +153,43 @@ export const addMember = async (req, res) => {
     }
     const boardTitle = boardRows[0].title; // Guardamos el título
 
-    const [userToInviteRows] = await pool.query('SELECT id FROM usuarios WHERE email = ?', [email]);
+    const [userToInviteRows] = await pool.query('SELECT id, nombre, email FROM usuarios WHERE email = ?', [email]);
     if (userToInviteRows.length === 0) {
       return res.status(404).json({ message: `No se encontró un usuario con el email: ${email}` });
     }
     const userToInviteId = userToInviteRows[0].id;
+    const userToInviteName = userToInviteRows[0].nombre;
 
     await pool.query('INSERT INTO board_members (board_id, user_id, role) VALUES (?, ?, ?)', [boardId, userToInviteId, 'member']);
+
+    // --- CREACIÓN AUTOMÁTICA DE STAKEHOLDER ---
+    try {
+      // Verificamos si ya existe como stakeholder en este proyecto (tablero)
+      // Nota: Asumimos contact_info contiene el email para identificarlo
+      const [existingStakeholder] = await pool.query(
+        `SELECT id FROM stakeholders WHERE project_id = ? AND JSON_EXTRACT(contact_info, '$.email') = ?`,
+        [boardId, email]
+      );
+
+      if (existingStakeholder.length === 0) {
+        await pool.query(
+          `INSERT INTO stakeholders (project_id, name, role, priority, contact_info)
+           VALUES (?, ?, ?, ?, ?)`,
+          [
+            boardId, 
+            userToInviteName, 
+            'Collaborator', // Rol por defecto
+            'medium', 
+            JSON.stringify({ email: email, isSystemUser: true, userId: userToInviteId })
+          ]
+        );
+        console.log(`[AUTO] Stakeholder creado para usuario ${email} en tablero ${boardId}`);
+      }
+    } catch (stakeholderError) {
+      console.error('[AUTO] Error al crear stakeholder automático (no crítico):', stakeholderError);
+      // No fallamos la petición principal si esto falla
+    }
+    // -------------------------------------------
 
     // --- 3. Lógica para enviar el correo de invitación ---
     const inviteLink = `http://localhost:4200/app/boards/${boardId}`;

@@ -1,0 +1,194 @@
+<div class="flex h-full flex-col">
+  <!-- Header -->
+  <div class="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <div class="flex items-center gap-4">
+        <h1 class="text-2xl font-bold dark:text-white">📦 Deliverable Tracker</h1>
+        
+        <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span class="text-gray-500 dark:text-gray-400">📂</span>
+            </div>
+            <select 
+                [ngModel]="selectedProject" 
+                (ngModelChange)="selectProject($event)"
+                class="appearance-none pl-10 pr-10 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer min-w-[200px] transition-all hover:border-blue-400">
+                <option *ngFor="let p of projects" [ngValue]="p">{{ p.title }}</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-600 dark:text-gray-300">
+                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+    <button (click)="openModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-medium">
+        + Nuevo Entregable
+    </button>
+  </div>
+
+  <div class="flex-1 overflow-auto p-6 bg-gray-50 dark:bg-gray-900">
+      
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-blue-500">
+              <div class="text-gray-500 text-xs uppercase font-bold">Total</div>
+              <div class="text-2xl font-bold dark:text-white">{{ total }}</div>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-green-500">
+              <div class="text-gray-500 text-xs uppercase font-bold">Aprobados</div>
+              <div class="text-2xl font-bold dark:text-white">{{ approvedCount }}</div>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-yellow-500">
+              <div class="text-gray-500 text-xs uppercase font-bold">En Progreso</div>
+              <div class="text-2xl font-bold dark:text-white">{{ inProgressCount }}</div>
+          </div>
+           <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-red-500">
+              <div class="text-gray-500 text-xs uppercase font-bold">Retrasados</div>
+              <div class="text-2xl font-bold dark:text-white">{{ overdueCount }}</div>
+          </div>
+      </div>
+
+      <!-- Timeline / Table View -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+          <table class="w-full text-left">
+              <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 uppercase text-xs">
+                  <tr>
+                      <th class="px-6 py-3">Entregable</th>
+                      <th class="px-6 py-3">Tipo</th>
+                      <th class="px-6 py-3">Fecha Límite</th>
+                      <th class="px-6 py-3">Estado</th>
+                      <th class="px-6 py-3 w-1/4">Progreso</th>
+                      <th class="px-6 py-3">Acciones</th>
+                  </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr *ngFor="let d of deliverables" class="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                      <td class="px-6 py-4">
+                          <div class="font-medium text-gray-900 dark:text-white">{{ d.title }}</div>
+                          <div class="text-sm text-gray-500 truncate max-w-xs">{{ d.description }}</div>
+                          <a *ngIf="d.evidenceLink || d.evidence_link" [href]="d.evidenceLink || d.evidence_link" target="_blank" class="text-xs text-blue-500 hover:underline mt-1 block">
+                             🔗 Ver Evidencia
+                          </a>
+                      </td>
+                      <td class="px-6 py-4">
+                          <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs font-bold border border-gray-200 dark:border-gray-600">
+                             {{ getTypeIcon(d.type) }} {{ d.type }}
+                          </span>
+                      </td>
+                      <td class="px-6 py-4">
+                          <div [class.text-red-600]="isOverdue(d)" [class.font-bold]="isOverdue(d)">
+                              {{ (d.dueDate || d.due_date) | date:'mediumDate' }}
+                              <span *ngIf="isOverdue(d)" class="text-xs bg-red-100 text-red-800 px-1 rounded ml-1">⚠️ Vencido</span>
+                          </div>
+                      </td>
+                      <td class="px-6 py-4">
+                          <div class="relative inline-block group">
+                              <select 
+                                [ngModel]="d.status" 
+                                (ngModelChange)="updateStatus(d, $event)"
+                                class="appearance-none pl-8 pr-8 py-1.5 rounded-full text-xs font-bold border-2 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                                [ngClass]="{
+                                    'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200 focus:ring-gray-400': d.status === 'pending',
+                                    'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200 focus:ring-blue-400': d.status === 'in_progress',
+                                    'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200 focus:ring-purple-400': d.status === 'in_review',
+                                    'bg-green-100 text-green-700 border-green-200 hover:bg-green-200 focus:ring-green-400': d.status === 'approved',
+                                    'bg-red-100 text-red-700 border-red-200 hover:bg-red-200 focus:ring-red-400': d.status === 'rejected'
+                                }">
+                                <option value="pending">Pendiente</option>
+                                <option value="in_progress">En Progreso</option>
+                                <option value="in_review">En Revisión</option>
+                                <option value="approved">Aprobado</option>
+                                <option value="rejected">Rechazado</option>
+                              </select>
+                              
+                              <!-- Indicador Visual (Círculo) -->
+                              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
+                                  <div class="h-2.5 w-2.5 rounded-full shadow-sm" [ngClass]="{
+                                    'bg-gray-400': d.status === 'pending',
+                                    'bg-blue-500': d.status === 'in_progress',
+                                    'bg-purple-500': d.status === 'in_review',
+                                    'bg-green-500': d.status === 'approved',
+                                    'bg-red-500': d.status === 'rejected'
+                                  }"></div>
+                              </div>
+                              
+                              <!-- Flecha Desplegable -->
+                              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-current opacity-50">
+                                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                  </svg>
+                              </div>
+                          </div>
+                      </td>
+                      <td class="px-6 py-4">
+                          <div class="w-full max-w-[140px]">
+                              <div class="flex justify-between items-end mb-1.5">
+                                  <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Avance</span>
+                                  <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 shadow-sm">
+                                    {{ d.progress }}%
+                                  </span>
+                              </div>
+                              <input type="range" min="0" max="100" [ngModel]="d.progress" (change)="updateProgress(d, $any($event.target).value)" 
+                                     class="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-500 transition-all"
+                                     [style.background-size]="d.progress + '% 100%'">
+                          </div>
+                      </td>
+                      <td class="px-6 py-4 flex gap-2">
+                          <button (click)="openModal(d)" class="text-gray-500 hover:text-blue-600" title="Editar">✏️</button>
+                          <button (click)="delete(d)" class="text-gray-500 hover:text-red-600" title="Eliminar">🗑️</button>
+                      </td>
+                  </tr>
+              </tbody>
+          </table>
+          
+          <div *ngIf="deliverables.length === 0" class="p-12 text-center text-gray-500">
+              No hay entregables definidos. ¡Comienza añadiendo uno!
+          </div>
+      </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+        <h2 class="text-xl font-bold mb-4 dark:text-white">{{ newItem.id ? 'Editar' : 'Nuevo' }} Entregable</h2>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1 dark:text-gray-300">Título</label>
+                <input [(ngModel)]="newItem.title" type="text" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 dark:text-gray-300">Descripción</label>
+                <textarea [(ngModel)]="newItem.description" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" rows="2"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                 <div>
+                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Tipo</label>
+                    <select [(ngModel)]="newItem.type" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white">
+                        <option value="document">Documento</option>
+                        <option value="code">Código</option>
+                        <option value="design">Diseño</option>
+                        <option value="report">Reporte</option>
+                        <option value="other">Otro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Fecha Límite</label>
+                    <input [(ngModel)]="newItem.dueDate" type="date" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white">
+                </div>
+            </div>
+             <div>
+                <label class="block text-sm font-medium mb-1 dark:text-gray-300">Link Evidencia (Opcional)</label>
+                <input [(ngModel)]="newItem.evidenceLink" type="url" placeholder="https://..." class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white">
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6">
+            <button (click)="closeModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancelar</button>
+            <button (click)="save()" [disabled]="isSaving" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+                {{ isSaving ? 'Guardando...' : 'Guardar' }}
+            </button>
+        </div>
+    </div>
+</div>

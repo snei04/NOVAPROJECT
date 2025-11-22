@@ -55,7 +55,7 @@
                   <input 
                     type="checkbox" 
                     [checked]="card.isCompleted" 
-                    (change)="toggleCardCompletion(card)"
+                    (change)="toggleCardCompletion(card, list.id)"
                     (click)="$event.stopPropagation()"
                     class="ml-2 mt-1"
                   />

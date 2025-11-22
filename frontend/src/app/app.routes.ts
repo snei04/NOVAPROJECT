@@ -17,4 +17,9 @@ export const routes: Routes = [
     loadChildren: () => 
       import('./modules/layout/layout.routes').then((m) => m.LAYOUT_ROUTES),
   },
+  // {
+  //   path: 'documents',
+  //   loadChildren: () => 
+  //     import('./features/documents/documents.module').then((m) => m.DocumentsModule),
+  // },
 ];
