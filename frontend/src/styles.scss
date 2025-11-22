@@ -6,7 +6,35 @@
 @import '@angular/cdk/overlay-prebuilt.css';
 @import 'ngx-toastr/toastr';
 
-/* ===== Estilos para el Editor TipTap ===== */
+@layer base {
+  html, body {
+    font-family: 'Montserrat', 'Calibri', sans-serif; /* Tipografía Apoyo IMEVI */
+    @apply text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Ample Soft', 'Montserrat', sans-serif; /* Tipografía Corporativa (Fallback) */
+  }
+}
+
+/* ===== Estilos para botones globales ===== */
+.btn-sm {
+  @apply px-3 py-1.5 text-sm font-medium rounded-lg transition-colors;
+}
+
+/* Usando colores corporativos IMEVI definidos en Tailwind */
+.btn-primary {
+  @apply bg-imevi-main text-white hover:bg-imevi-dark shadow-sm hover:shadow;
+}
+
+.btn-secondary {
+  @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white hover:bg-red-700;
+}
+
 .ProseMirror {
   outline: none;
   min-height: 200px;

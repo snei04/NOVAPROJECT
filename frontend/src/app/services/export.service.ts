@@ -136,9 +136,8 @@ export class ExportService {
             const rowData: any[] = [];
             row.content.forEach((cell: any) => {
               if ((cell.type === 'tableCell' || cell.type === 'tableHeader') && cell.content) {
-                const cellText = cell.content
-                  .map((n: any) => n.text || '')
-                  .join('');
+                // Usar una función recursiva para extraer texto de la celda (puede contener párrafos)
+                const cellText = this.getTextFromNode(cell);
                 rowData.push(cellText);
               }
             });
@@ -161,6 +160,21 @@ export class ExportService {
     }
 
     return tables;
+  }
+
+  /**
+   * Helper para extraer todo el texto dentro de un nodo recursivamente
+   */
+  private getTextFromNode(node: any): string {
+    if (node.text) {
+      return node.text;
+    }
+
+    if (node.content && Array.isArray(node.content)) {
+      return node.content.map((child: any) => this.getTextFromNode(child)).join(' ');
+    }
+
+    return '';
   }
 
   /**

@@ -14,7 +14,7 @@
           <ul class="flex items-center space-x-2 text-sm font-medium">
             <li>
               <a routerLink="/app/project-dashboard" 
-                 class="block py-3 px-4 text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors font-semibold"
+                 class="block py-3 px-4 text-white bg-imevi-main rounded-lg hover:bg-imevi-dark transition-colors font-semibold shadow-sm"
                  title="Dashboard de Progreso - Solución IMEVI">
                 📊 Dashboard
               </a>
@@ -26,40 +26,40 @@
                 cdkOverlayOrigin
                 #boardsOverlay="cdkOverlayOrigin"
               >
-                <span class="flex space-x-2 text-left">
+                <span class="flex space-x-2 text-left text-white">
                   <span>Tableros</span>
                   <fa-icon [icon]="faAngleDown"></fa-icon>
                 </span>
               </app-btn>
             </li>
             <li>
-              <a routerLink="/app/users" class="block py-3 px-4 text-white">Usuarios</a>
+              <a routerLink="/app/users" class="block py-3 px-4 text-white hover:text-gray-200 transition-colors">Usuarios</a>
             </li>
             <li>
-              <a routerLink="/app/my-tasks" class="block py-3 px-4 text-white">
+              <a routerLink="/app/my-tasks" class="block py-3 px-4 text-white hover:text-gray-200 transition-colors">
                 Mis Tareas
               </a>
             </li>
             <li>
-              <a routerLink="/app/stakeholders" class="block py-3 px-4 text-white">Stakeholders</a>
+              <a routerLink="/app/stakeholders" class="block py-3 px-4 text-white hover:text-gray-200 transition-colors">Stakeholders</a>
             </li>
             <li>
               <a routerLink="/app/risk-management" 
-                 class="block py-3 px-4 text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors font-semibold"
+                 class="block py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors font-semibold"
                  title="Risk Management Inteligente - Solución IMEVI">
                 ⚠️ Riesgos
               </a>
             </li>
             <li>
               <a routerLink="/app/deliverable-tracker" 
-                 class="block py-3 px-4 text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+                 class="block py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors font-semibold"
                  title="Deliverable Tracker Avanzado - Solución IMEVI">
                 📋 Entregables
               </a>
             </li>
             <li>
               <a routerLink="/app/documents" 
-                 class="block py-3 px-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                 class="block py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors font-semibold"
                  title="Gestión de Documentos - Solución IMEVI">
                 📄 Documentos
               </a>
@@ -83,12 +83,24 @@
       </div>
       <div class="flex items-center">
         <div class="flex space-x-2">
-          <button class="text-white" type="button">
+          <!-- Notifications Bell -->
+          <button class="text-white relative" type="button"
+            (click)="isOpenOverlayNotifications = !isOpenOverlayNotifications"
+            cdkOverlayOrigin
+            #notificationsOverlay="cdkOverlayOrigin">
             <fa-icon [icon]="faBell"></fa-icon>
+            <!-- Badge for unread notifications -->
+            <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white transform translate-x-1/2 -translate-y-1/2"></span>
           </button>
-          <button class="text-white" type="button">
+
+          <!-- Info Button -->
+          <button class="text-white" type="button"
+            (click)="isOpenOverlayInfo = !isOpenOverlayInfo"
+            cdkOverlayOrigin
+            #infoOverlay="cdkOverlayOrigin">
             <fa-icon [icon]="faInfoCircle"></fa-icon>
           </button>
+
           <button
             type="button"
             class="flex rounded-full"
@@ -107,6 +119,90 @@
       </div>
     </div>
   </nav>
+
+  <!-- Notifications Overlay -->
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="notificationsOverlay"
+    [cdkConnectedOverlayOpen]="isOpenOverlayNotifications"
+    (overlayOutsideClick)="isOpenOverlayNotifications = false"
+  >
+    <div class="z-50 my-4 w-80 text-base list-none bg-white rounded shadow-lg ring-1 ring-black ring-opacity-5">
+      <div class="py-3 px-4 border-b border-gray-100 flex justify-between items-center">
+        <span class="font-semibold text-gray-900">🔔 Notificaciones</span>
+        <button (click)="isOpenOverlayNotifications = false" class="text-gray-400 hover:text-gray-500">
+          <fa-icon [icon]="faClose"></fa-icon>
+        </button>
+      </div>
+      <div class="max-h-96 overflow-y-auto">
+        @for (note of notifications; track note.id) {
+          <div class="p-4 hover:bg-gray-50 border-b border-gray-100 last:border-0 cursor-pointer transition-colors">
+            <div class="flex items-start gap-3">
+              <div class="flex-shrink-0 mt-1">
+                <span class="block h-2.5 w-2.5 rounded-full" 
+                  [ngClass]="{
+                    'bg-red-500': note.type === 'error',
+                    'bg-yellow-500': note.type === 'warning',
+                    'bg-blue-500': note.type === 'info'
+                  }"></span>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">{{ note.title }}</p>
+                <p class="text-sm text-gray-500">{{ note.message }}</p>
+                <p class="text-xs text-gray-400 mt-1">{{ note.time }}</p>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="p-4 text-center text-gray-500 text-sm italic">
+            No tienes notificaciones nuevas.
+          </div>
+        }
+      </div>
+      <div class="py-2 bg-gray-50 text-center rounded-b border-t border-gray-100">
+        <a href="#" class="text-xs font-medium text-blue-600 hover:text-blue-500">Ver todas</a>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Info/Help Overlay -->
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="infoOverlay"
+    [cdkConnectedOverlayOpen]="isOpenOverlayInfo"
+    (overlayOutsideClick)="isOpenOverlayInfo = false"
+  >
+    <div class="z-50 my-4 w-80 text-base list-none bg-white rounded shadow-lg ring-1 ring-black ring-opacity-5">
+      <div class="py-3 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t flex justify-between items-center">
+        <span class="font-semibold">ℹ️ Ayuda y Uso de Datos</span>
+        <button (click)="isOpenOverlayInfo = false" class="text-blue-100 hover:text-white">
+          <fa-icon [icon]="faClose"></fa-icon>
+        </button>
+      </div>
+      <div class="p-4 space-y-4">
+        <div>
+          <h4 class="text-sm font-bold text-gray-900 mb-1">🔒 Privacidad de Datos</h4>
+          <p class="text-xs text-gray-600 leading-relaxed">
+            En NovaProject, tus datos están seguros. Utilizamos encriptación de extremo a extremo para proteger la información sensible de tus proyectos y stakeholders.
+          </p>
+        </div>
+        <div>
+          <h4 class="text-sm font-bold text-gray-900 mb-1">🚀 Tips de Usabilidad</h4>
+          <ul class="text-xs text-gray-600 space-y-2 list-disc list-inside">
+            <li>Usa el <strong>Dashboard</strong> para ver métricas en tiempo real.</li>
+            <li>Crea <strong>Reportes Semanales</strong> cada viernes para mantener el seguimiento.</li>
+            <li>Gestiona los <strong>Riesgos</strong> antes de que se conviertan en problemas.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="py-3 px-4 bg-gray-50 border-t border-gray-100 rounded-b">
+        <a href="#" class="text-xs text-blue-600 hover:underline flex items-center justify-center gap-1">
+          <span>Ver documentación completa</span>
+          <span>→</span>
+        </a>
+      </div>
+    </div>
+  </ng-template>
 
   <ng-template
     cdkConnectedOverlay

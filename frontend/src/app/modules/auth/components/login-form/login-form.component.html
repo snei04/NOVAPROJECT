@@ -7,9 +7,9 @@
         formControlName="email"
         placeholder="Enter email"
         type="email"
-        class="w-full rounded bg-gray-100 border-gray-300 border-2"
+        class="w-full rounded bg-gray-100 border-gray-300 border-2 text-gray-900 placeholder-gray-500 focus:border-imevi-main focus:ring-imevi-main"
       />
-      <button type="button" class="p-2 absolute right-2" (click)="nameInput.focus()">
+      <button type="button" class="p-2 absolute right-2 text-gray-500" (click)="nameInput.focus()">
         <fa-icon [icon]="faPen"></fa-icon>
       </button>
     </div>
@@ -32,9 +32,9 @@
         formControlName="password"
         placeholder="Enter password"
         [type]="showPassword ? 'text' : 'password'"
-        class="w-full rounded bg-gray-100 border-gray-300 border-2"
+        class="w-full rounded bg-gray-100 border-gray-300 border-2 text-gray-900 placeholder-gray-500 focus:border-imevi-main focus:ring-imevi-main"
       />
-      <button type="button" class="p-2 absolute right-2" (click)="showPassword = !showPassword">
+      <button type="button" class="p-2 absolute right-2 text-gray-500" (click)="showPassword = !showPassword">
         <fa-icon [icon]="showPassword ? faEye : faEyeSlash"></fa-icon>
       </button>
     </div>
@@ -59,8 +59,9 @@
   <div>
     <app-btn
       typeBtn="submit"
-      color="success"
+      color="primary"
       [loading]="status === 'loading'"
+      class="w-full block"
       >Iniciar sesión</app-btn
     >
   </div>
