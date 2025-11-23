@@ -9,19 +9,21 @@ export const createCard = async (req, res) => {
     const userId = req.user.id;
 
     const [permissionRows] = await pool.query(`
-      SELECT b.user_id 
+      SELECT b.id
       FROM lists l
       JOIN boards b ON l.board_id = b.id
-      WHERE l.id = ?
-    `, [listId]);
+      LEFT JOIN board_members bm ON b.id = bm.board_id
+      WHERE l.id = ? AND (b.user_id = ? OR bm.user_id = ?)
+      LIMIT 1
+    `, [listId, userId, userId]);
 
     if (permissionRows.length === 0) {
-      return res.status(404).json({ message: 'La lista no existe.' });
+      return res.status(403).json({ message: 'No tienes permiso para crear tarjetas en este tablero.' });
     }
 
-    if (permissionRows[0].user_id !== userId) {
-      return res.status(403).json({ message: 'Solo los dueños del tablero pueden crear tarjetas.' });
-    }
+    // if (permissionRows[0].user_id !== userId) {
+    //   return res.status(403).json({ message: 'Solo los dueños del tablero pueden crear tarjetas.' });
+    // }
 
     const newCard = await CardService.createCard(req.body);
     res.status(201).json(newCard);
@@ -46,7 +48,11 @@ export const updateCard = async (req, res) => {
     if (userRole !== 'owner') {
       console.log("--- [DEBUG] El usuario no es 'owner'. Verificando permisos de miembro...");
       
-      const allowedUpdatesForMember = ['description', 'isCompleted']; // Campos que un miembro puede editar
+      // Eliminamos boardId si viene en los updates para evitar errores y chequeos innecesarios
+      delete updates.boardId;
+
+      // Lista RESTRINGIDA de campos permitidos para miembros
+      const allowedUpdatesForMember = ['description', 'isCompleted']; 
       const requestedUpdates = Object.keys(updates);
   
 
@@ -57,11 +63,13 @@ export const updateCard = async (req, res) => {
       
       if (!isUpdateAllowed) {
         console.log('--- [DEBUG] ACCESO DENEGADO: El miembro intenta actualizar campos no permitidos.');
-        return res.status(403).json({ message: 'Como miembro, solo puedes actualizar la descripción.' });
+        return res.status(403).json({ message: 'Como miembro, solo puedes actualizar la descripción y marcar como completado.' });
       }
       
       console.log('--- [DEBUG] PERMISO CONCEDIDO: El miembro solo está actualizando campos permitidos.');
     } else {
+      // Si es owner, también quitamos boardId por seguridad de DB
+      delete updates.boardId;
       console.log("--- [DEBUG] PERMISO CONCEDIDO: El usuario es 'owner'.");
     }
     // --- FIN DE LA LÓGICA DE PERMISOS ---
@@ -120,7 +128,7 @@ export const assignMemberToCard = async (req, res) => {
     const userToAssign = userRows[0];
 
     const [cardDetailsRows] = await pool.query(`
-      SELECT c.title as cardTitle, b.id as boardId, b.title as boardTitle
+      SELECT c.title as cardTitle, b.id as boardId, b.title as boardTitle, b.user_id as ownerId
       FROM cards c
       JOIN lists l ON c.list_id = l.id
       JOIN boards b ON l.board_id = b.id
@@ -131,12 +139,23 @@ export const assignMemberToCard = async (req, res) => {
     }
     const cardDetails = cardDetailsRows[0];
     const boardId = cardDetails.boardId;
+    const ownerId = cardDetails.ownerId;
 
-    // Lógica de permisos (se mantiene igual)
-    const [memberRows] = await pool.query('SELECT user_id FROM board_members WHERE board_id = ?', [boardId]);
-    const memberIds = memberRows.map(m => m.user_id);
-    if (!memberIds.includes(Number(requesterId)) || !memberIds.includes(Number(userIdToAssign))) {
-        return res.status(403).json({ message: 'Ambos usuarios deben ser miembros del tablero.' });
+    // Lógica de permisos: SOLO EL DUEÑO PUEDE ASIGNAR
+    if (requesterId !== ownerId) {
+       // Verificamos si es "owner" en board_members también
+       const [memberRoleRows] = await pool.query('SELECT role FROM board_members WHERE board_id = ? AND user_id = ?', [boardId, requesterId]);
+       if (memberRoleRows.length === 0 || memberRoleRows[0].role !== 'owner') {
+          return res.status(403).json({ message: 'Solo el dueño del tablero puede asignar miembros a las tarjetas.' });
+       }
+    }
+
+    // Verificamos que el usuario a asignar sea miembro del tablero
+    const [isMemberRows] = await pool.query('SELECT user_id FROM board_members WHERE board_id = ? AND user_id = ?', [boardId, userIdToAssign]);
+    const isOwnerAssignee = (userIdToAssign === ownerId); // El dueño siempre es miembro implícito
+    
+    if (isMemberRows.length === 0 && !isOwnerAssignee) {
+        return res.status(400).json({ message: 'El usuario debe ser miembro del tablero para ser asignado a una tarjeta.' });
     }
 
     // Asignar miembro
@@ -173,18 +192,29 @@ export const removeMemberFromCard = async (req, res) => {
     console.log(`- Datos recibidos: cardId=${cardId}, userIdToRemove=${userIdToRemove}, requesterId=${requesterId}`);
 
      try {
-    const [cardData] = await pool.query('SELECT l.board_id FROM cards c JOIN lists l ON c.list_id = l.id WHERE c.id = ?', [cardId]);
+    const [cardData] = await pool.query('SELECT l.board_id, b.user_id as ownerId FROM cards c JOIN lists l ON c.list_id = l.id JOIN boards b ON l.board_id = b.id WHERE c.id = ?', [cardId]);
     if (cardData.length === 0) {
       console.log(`- [DEBUG] FALLO: No se encontró la tarjeta con id ${cardId}.`);
       return res.status(404).json({ message: 'Tarjeta no encontrada.' });
     }
     const boardId = cardData[0].board_id;
+    const ownerId = cardData[0].ownerId;
     console.log(`- [DEBUG] La tarjeta pertenece al tablero (boardId): ${boardId}`);
     
-    const [memberRows] = await pool.query('SELECT user_id FROM board_members WHERE board_id = ? AND user_id = ?', [boardId, requesterId]);
-    if (memberRows.length === 0) {
-      console.log(`- [DEBUG] FALLO: El usuario que pide (${requesterId}) no es miembro y no puede quitar asignaciones.`);
-      return res.status(403).json({ message: 'No tienes permiso para quitar miembros en este tablero.' });
+    // Lógica de permisos: SOLO EL DUEÑO PUEDE QUITAR ASIGNACIÓN
+    let isAuthorized = false;
+    if (requesterId === ownerId) {
+        isAuthorized = true;
+    } else {
+        const [memberRoleRows] = await pool.query('SELECT role FROM board_members WHERE board_id = ? AND user_id = ?', [boardId, requesterId]);
+        if (memberRoleRows.length > 0 && memberRoleRows[0].role === 'owner') {
+            isAuthorized = true;
+        }
+    }
+
+    if (!isAuthorized) {
+      console.log(`- [DEBUG] FALLO: El usuario que pide (${requesterId}) no es dueño.`);
+      return res.status(403).json({ message: 'Solo el dueño del tablero puede quitar miembros de las tarjetas.' });
     }
 
     console.log('- [DEBUG] ÉXITO: Verificación de permiso pasada.');

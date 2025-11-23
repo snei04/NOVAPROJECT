@@ -33,7 +33,7 @@
       @for (list of board?.lists; track list.id) {
         <div class="rounded bg-gray-200 w-72 p-2 mr-3 shrink-0">
           <div class="flex justify-between items-center py-1">
-            <h3 class="text-sm font-bold ml-2">{{ list.title }}</h3>
+            <h3 class="text-sm font-bold ml-2 text-gray-900">{{ list.title }}</h3>
             @if (board?.userRole === 'owner') {
               <div>
                 <button (click)="renameList(list)" class="px-2 text-gray-500 hover:text-black">✏️</button>
@@ -47,17 +47,17 @@
               <div
                 (click)="openDialog(card)"
                 cdkDrag
-                class="bg-white shadow p-2 rounded mt-2 border-b border-x-gray-300 cursor-pointer hover:bg-gray-400"
+                class="bg-white shadow p-2 rounded mt-2 border-b border-x-gray-300 cursor-pointer hover:bg-gray-100"
                 [class.opacity-60]="card.isCompleted"
               >
-                <div class="flex justify-between items-start">
+                <div class="flex justify-between items-start text-gray-900">
                   <p class="mb-2 flex-grow" [class.line-through]="card.isCompleted">{{ card.title }}</p>
                   <input 
                     type="checkbox" 
                     [checked]="card.isCompleted" 
                     (change)="toggleCardCompletion(card, list.id)"
                     (click)="$event.stopPropagation()"
-                    class="ml-2 mt-1"
+                    class="ml-2 mt-1 accent-imevi-main"
                   />
                 </div>
                 <div class="flex flex-wrap gap-1 mb-2">
@@ -102,8 +102,8 @@
           <div class="mt-5">
             @if (list.showCardForm) {
               <div class="w-full">
-                <textarea [formControl]="inputCard" class="w-full"></textarea>
-                <div class="flex space-x-2 justify-between">
+                <textarea [formControl]="inputCard" class="w-full p-2 text-sm border-gray-300 rounded text-gray-900 bg-white" placeholder="Título de la tarjeta"></textarea>
+                <div class="flex space-x-2 justify-between mt-2">
                   <app-btn color="success" (click)="createCard(list)">Crear</app-btn>
                   <app-btn color="light" (click)="closeCardForm(list)">Cerrar</app-btn>
                 </div>
@@ -121,9 +121,9 @@
 
       <div class="shrink-0">
         @if (showListForm) {
-          <div class="w-full">
-            <textarea [formControl]="inputList" class="w-full"></textarea>
-            <div class="flex space-x-2 justify-between">
+          <div class="w-full bg-white p-2 rounded shadow">
+            <textarea [formControl]="inputList" class="w-full p-2 text-sm border-gray-300 rounded text-gray-900 bg-white" placeholder="Título de la lista"></textarea>
+            <div class="flex space-x-2 justify-between mt-2">
               <app-btn color="success" (click)="addList()">Crear</app-btn>
               <app-btn color="light" (click)="showListForm = !showListForm">Cerrar</app-btn>
             </div>

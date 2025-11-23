@@ -9,9 +9,17 @@ export const createList = async (req, res) => {
     const userId = req.user.id;
 
     // La verificación de permisos se queda en el controlador
-    const [boardRows] = await pool.query('SELECT user_id FROM boards WHERE id = ?', [boardId]);
-    if (boardRows.length === 0 || boardRows[0].user_id !== userId) {
-        return res.status(404).json({ message: 'Tablero no encontrado o no pertenece al usuario' });
+    // PERMISO ACTUALIZADO: Permitir a miembros (no solo dueños) crear listas
+    const [permissionRows] = await pool.query(`
+      SELECT b.id 
+      FROM boards b 
+      LEFT JOIN board_members bm ON b.id = bm.board_id 
+      WHERE b.id = ? AND (b.user_id = ? OR bm.user_id = ?)
+      LIMIT 1
+    `, [boardId, userId, userId]);
+
+    if (permissionRows.length === 0) {
+        return res.status(404).json({ message: 'Tablero no encontrado o no tienes permiso para crear listas.' });
     }
 
     const newList = await ListService.createList(req.body);

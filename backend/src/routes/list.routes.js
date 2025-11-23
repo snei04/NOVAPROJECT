@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import { createList, updateList, deleteList } from '../controllers/list.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
-import { isBoardOwner } from '../middleware/boardAuth.middleware.js';
+import { isBoardOwner, isBoardMember } from '../middleware/boardAuth.middleware.js';
 
 
 
@@ -13,7 +13,7 @@ router.use(protect);
 
 router.route('/')
   .post(createList);
-router.route('/:id').put(isBoardOwner, updateList).delete(isBoardOwner, deleteList);
+router.route('/:id').put(isBoardMember, updateList).delete(isBoardOwner, deleteList);
 
   
 
