@@ -10,7 +10,7 @@
             type="email"
             name="email"
             autocomplete="off"
-            class="w-full rounded bg-gray-100 border-gray-300 border-2"
+            class="w-full rounded bg-gray-100 border-gray-300 border-2 text-gray-900 placeholder-gray-500 focus:border-imevi-main focus:ring-imevi-main"
           />
         </div>
         @if (formUser.controls.email.touched && formUser.controls.email.invalid) {
@@ -27,7 +27,7 @@
         }
       </div>
       <div>
-        <app-btn typeBtn="submit" color="success" [loading]="statusUser === 'loading'">Continuar</app-btn>
+        <app-btn typeBtn="submit" color="primary" [loading]="statusUser === 'loading'">Continuar</app-btn>
       </div>
     </form>
   </div>
@@ -42,7 +42,7 @@
             placeholder="Enter your name"
             type="text"
             name="name"
-            class="w-full rounded bg-gray-100 border-gray-300 border-2"
+            class="w-full rounded bg-gray-100 border-gray-300 border-2 text-gray-900 placeholder-gray-500 focus:border-imevi-main focus:ring-imevi-main"
           />
         </div>
         @if (form.controls.name.touched && form.controls.name.invalid) {
@@ -67,7 +67,7 @@
             type="email"
             name="email"
             autocomplete="off"
-            class="w-full rounded bg-gray-100 border-gray-300 border-2"
+            class="w-full rounded bg-gray-100 border-gray-300 border-2 text-gray-900 placeholder-gray-500 focus:border-imevi-main focus:ring-imevi-main"
           />
         </div>
         @if (form.controls.email.touched && form.controls.email.invalid) {
@@ -94,7 +94,7 @@
             formControlName="password"
             placeholder="Enter password"
             [type]="showPassword ? 'text' : 'password'"
-            class="w-full rounded bg-gray-100 border-gray-300 border-2"
+            class="w-full rounded bg-gray-100 border-gray-300 border-2 text-gray-900 placeholder-gray-500 focus:border-imevi-main focus:ring-imevi-main"
           />
           <button
             type="button"
@@ -128,7 +128,7 @@
             formControlName="confirmPassword"
             placeholder="Confirm password"
             type="password"
-            class="w-full rounded bg-gray-100 border-gray-300 border-2"
+            class="w-full rounded bg-gray-100 border-gray-300 border-2 text-gray-900 placeholder-gray-500 focus:border-imevi-main focus:ring-imevi-main"
           />
         </div>
         @if (form.controls.confirmPassword.touched && form.controls.confirmPassword.invalid) {
@@ -152,7 +152,7 @@
         }
       }
       <div>
-        <app-btn typeBtn="submit" color="success" [loading]="status === 'loading'">Registrar</app-btn>
+        <app-btn typeBtn="submit" color="primary" [loading]="status === 'loading'">Registrar</app-btn>
       </div>
     </form>
   </div>

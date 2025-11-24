@@ -6,15 +6,29 @@ import { sendMail } from '../services/mail.service.js';
 export const createBoard = async (req, res) => {
   try {
     console.log('Create Board Request:', { body: req.body, user: req.user });
-    const { title, backgroundColor } = req.body;
+    const { title, backgroundColor, generalObjective, scopeDefinition, specificObjectives } = req.body;
     const userId = req.user.id;
 
     if (!title || !backgroundColor) {
       return res.status(400).json({ message: 'El título y el color de fondo son requeridos' });
     }
 
+    // Validación de campos de gobernanza (Mejora 4)
+    if (!generalObjective || !scopeDefinition || !specificObjectives) {
+        return res.status(400).json({ 
+            message: 'Los campos de gobernanza (Objetivo General, Alcance, Objetivos Específicos) son obligatorios.' 
+        });
+    }
+
     // 2. El controlador ahora solo llama al servicio
-    const newBoard = await BoardService.createBoard({ title, backgroundColor, userId });
+    const newBoard = await BoardService.createBoard({ 
+        title, 
+        backgroundColor, 
+        userId,
+        generalObjective,
+        scopeDefinition,
+        specificObjectives
+    });
 
     res.status(201).json(newBoard);
   } catch (error) {
@@ -45,43 +59,21 @@ export const getBoard = async (req, res) => {
             return res.status(404).json({ message: 'Tablero no encontrado o no tienes permiso para verlo.' });
         }
         
-        const [boardRows] = await pool.query('SELECT * FROM boards WHERE id = ?', [id]);
-        const board = boardRows[0];
+        const board = await BoardService.getFullBoardDetails(id);
         
-        const [lists] = await pool.query('SELECT * FROM lists WHERE board_id = ? ORDER BY position', [id]);
-        
-        // Consulta explícita de todas las columnas de la tarjeta
-        const [cards] = await pool.query('SELECT id, title, description, position, due_date, list_id, is_completed FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?) ORDER BY position', [id]);
-        
-        const [members] = await pool.query('SELECT u.id, u.nombre AS name, u.email, u.avatar FROM usuarios u INNER JOIN board_members bm ON u.id = bm.user_id WHERE bm.board_id = ?', [id]);
-        const [labels] = await pool.query('SELECT l.id, l.name, l.color, cl.card_id FROM labels l INNER JOIN card_labels cl ON l.id = cl.label_id WHERE cl.card_id IN (SELECT id FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?))', [id]);
-        const [assignees] = await pool.query('SELECT u.id, u.nombre as name, u.email, u.avatar, ca.card_id FROM usuarios u INNER JOIN card_assignees ca ON u.id = ca.user_id WHERE ca.card_id IN (SELECT id FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?))', [id]);
+        if (!board) {
+             return res.status(404).json({ message: 'Tablero no encontrado.' });
+        }
 
-     const cardsWithDetails = cards.map(card => ({
-      id: card.id,
-      title: card.title,
-      description: card.description,
-      position: card.position,
-      dueDate: card.due_date, // Aquí hacemos la traducción
-      list_id: card.list_id,
-       isCompleted: card.is_completed,
-      labels: labels.filter(label => label.card_id === card.id),
-      assignees: assignees.filter(assignee => assignee.card_id === card.id)
-    }));
-    const [userRoleRows] = await pool.query(
-      'SELECT role FROM board_members WHERE board_id = ? AND user_id = ?',
-      [id, userId]
-    );
+        const [userRoleRows] = await pool.query(
+          'SELECT role FROM board_members WHERE board_id = ? AND user_id = ?',
+          [id, userId]
+        );
         if (userRoleRows.length > 0) {
-      board.userRole = userRoleRows[0].role;
-    } else if (board.user_id === userId) {
-      board.userRole = 'owner';
-    }
-        board.lists = lists.map(list => ({
-            ...list,
-            cards: cardsWithDetails.filter(card => card.list_id === list.id)
-        }));
-        board.members = members;
+          board.userRole = userRoleRows[0].role;
+        } else if (board.user_id === userId) {
+          board.userRole = 'owner';
+        }
 
         res.status(200).json(board);
     } catch (error) {
@@ -154,9 +146,24 @@ export const addMember = async (req, res) => {
     const boardTitle = boardRows[0].title; // Guardamos el título
 
     const [userToInviteRows] = await pool.query('SELECT id, nombre, email FROM usuarios WHERE email = ?', [email]);
+    
+    // --- 3. Lógica para enviar el correo de invitación ---
+    const inviteLink = `http://localhost:4200/app/boards/${boardId}`;
+    const registerLink = `http://localhost:4200/register`;
+
     if (userToInviteRows.length === 0) {
-      return res.status(404).json({ message: `No se encontró un usuario con el email: ${email}` });
+      // Usuario no existe: Enviar invitación para registrarse
+      const emailHtml = `
+        <h1>¡Has sido invitado a colaborar en NovaProject!</h1>
+        <p>Hola,</p>
+        <p>El usuario <b>${owner.nombre}</b> te ha invitado a colaborar en el tablero "<b>${boardTitle}</b>".</p>
+        <p>Aún no tienes una cuenta. Regístrate para acceder:</p>
+        <a href="${registerLink}" style="padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Registrarse</a>
+      `;
+      await sendMail(email, `Invitación para colaborar en "${boardTitle}"`, emailHtml);
+      return res.status(200).json({ message: 'Usuario no registrado. Se ha enviado una invitación por correo.' });
     }
+
     const userToInviteId = userToInviteRows[0].id;
     const userToInviteName = userToInviteRows[0].nombre;
 
@@ -191,13 +198,11 @@ export const addMember = async (req, res) => {
     }
     // -------------------------------------------
 
-    // --- 3. Lógica para enviar el correo de invitación ---
-    const inviteLink = `http://localhost:4200/app/boards/${boardId}`;
+    // Enviar correo de acceso directo si ya existe
     const emailHtml = `
       <h1>¡Has sido invitado a un tablero!</h1>
-
-      <p>Hola,</p>
-      <p>El usuario <b>${owner.name}</b> te ha invitado a colaborar en el tablero "<b>${boardTitle}</b>" en Novaproject.</p>
+      <p>Hola ${userToInviteName},</p>
+      <p>El usuario <b>${owner.nombre}</b> te ha invitado a colaborar en el tablero "<b>${boardTitle}</b>" en Novaproject.</p>
       <a href="${inviteLink}" style="padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Ver el tablero</a>
     `;
     await sendMail(email, `Invitación para colaborar en "${boardTitle}"`, emailHtml);

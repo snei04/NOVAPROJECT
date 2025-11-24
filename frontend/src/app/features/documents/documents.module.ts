@@ -14,6 +14,7 @@ import { DatabaseViewComponent } from './components/database-view/database-view.
 // Pages
 import { DocumentListComponent } from './pages/document-list/document-list.component';
 import { DocumentDetailComponent } from './pages/document-detail/document-detail.component';
+import { ShareDialogComponent } from './components/share-dialog/share-dialog.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { DocumentDetailComponent } from './pages/document-detail/document-detail
     CommonModule,
     FormsModule,
     HttpClientModule,
-    DocumentsRoutingModule
+    DocumentsRoutingModule,
+    ShareDialogComponent
   ],
   exports: [
     SidebarComponent

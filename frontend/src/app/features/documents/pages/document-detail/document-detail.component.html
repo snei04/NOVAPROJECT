@@ -21,6 +21,9 @@
         </span>
       </div>
       <div class="flex gap-2">
+        <button (click)="openShareDialog()" class="btn-sm px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-1 shadow-sm">
+          👥 Compartir
+        </button>
         <button (click)="exportDocument()" class="btn-sm btn-secondary">
           📊 Exportar
         </button>
@@ -47,4 +50,10 @@
       (contentChange)="onContentChange($event)">
     </app-editor>
   </div>
+  
+  <app-share-dialog 
+    *ngIf="showShareDialog" 
+    (close)="showShareDialog = false" 
+    (invite)="onInvite($event)">
+  </app-share-dialog>
 </div>

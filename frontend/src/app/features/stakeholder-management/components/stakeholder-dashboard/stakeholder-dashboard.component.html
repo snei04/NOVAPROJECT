@@ -26,10 +26,15 @@
     
     <!-- Columna 1: Stakeholders -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-      <h2 class="text-lg font-semibold mb-4 flex items-center">
-        👥 Stakeholders
-        <span class="ml-2 text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{{ stakeholders.length }}</span>
-      </h2>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold flex items-center">
+          👥 Stakeholders
+          <span class="ml-2 text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{{ stakeholders.length }}</span>
+        </h2>
+        <button (click)="openStakeholderModal()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200">
+          + Agregar
+        </button>
+      </div>
       
       <div class="space-y-3">
         <div *ngFor="let s of stakeholders" class="p-3 border rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors">
@@ -38,13 +43,21 @@
               <h3 class="font-medium">{{ s.name }}</h3>
               <p class="text-sm text-gray-500">{{ s.role }}</p>
             </div>
-            <span [ngClass]="{
-              'bg-red-100 text-red-800': s.priority === 'high',
-              'bg-yellow-100 text-yellow-800': s.priority === 'medium',
-              'bg-green-100 text-green-800': s.priority === 'low'
-            }" class="text-xs px-2 py-1 rounded-full">
-              {{ s.priority }}
-            </span>
+            <div class="flex items-center gap-2">
+                <span [ngClass]="{
+                  'bg-red-100 text-red-800': s.priority === 'high',
+                  'bg-yellow-100 text-yellow-800': s.priority === 'medium',
+                  'bg-green-100 text-green-800': s.priority === 'low'
+                }" class="text-xs px-2 py-1 rounded-full">
+                  {{ s.priority }}
+                </span>
+                <button *ngIf="!s.contactInfo?.userId && s.id" (click)="inviteStakeholder(s)" title="Invitar al Portal" class="text-blue-600 hover:text-blue-800">
+                    ✉️
+                </button>
+                <span *ngIf="s.contactInfo?.userId" title="Usuario Vinculado" class="text-green-600 cursor-help">
+                    🔗
+                </span>
+            </div>
           </div>
           <div class="mt-2 text-xs text-gray-400">
             {{ s.contactInfo?.email }}
@@ -196,6 +209,43 @@
       <button (click)="closeCommitmentModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400">Cancelar</button>
       <button (click)="createCommitment()" [disabled]="isCreatingCommitment" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
         {{ isCreatingCommitment ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nuevo Stakeholder -->
+<div *ngIf="showStakeholderModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+    <h3 class="text-xl font-bold mb-4 dark:text-white">Nuevo Stakeholder</h3>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Nombre</label>
+        <input [(ngModel)]="newStakeholder.name" type="text" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Rol</label>
+        <input [(ngModel)]="newStakeholder.role" type="text" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Ej: Sponsor">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Email</label>
+        <input [(ngModel)]="newStakeholder.contactInfo!.email" type="email" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Prioridad</label>
+        <select [(ngModel)]="newStakeholder.priority" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <option value="low">Baja</option>
+            <option value="medium">Media</option>
+            <option value="high">Alta</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 mt-6">
+      <button (click)="closeStakeholderModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400">Cancelar</button>
+      <button (click)="createStakeholder()" [disabled]="isCreatingStakeholder" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+        {{ isCreatingStakeholder ? 'Guardando...' : 'Crear' }}
       </button>
     </div>
   </div>

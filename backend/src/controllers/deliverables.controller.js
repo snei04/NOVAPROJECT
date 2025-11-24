@@ -1,5 +1,23 @@
 import fs from 'fs';
 import pool from '../config/database.js';
+import DeliverableService from '../services/deliverable.service.js';
+
+export const linkBoardToDeliverable = async (req, res) => {
+  try {
+    const { id } = req.params; // deliverableId
+    const { boardId } = req.body;
+
+    if (!boardId) {
+      return res.status(400).json({ message: 'boardId is required' });
+    }
+
+    await DeliverableService.linkBoard(id, boardId);
+    res.status(200).json({ message: 'Tablero vinculado correctamente al entregable' });
+  } catch (error) {
+    console.error('Error linking board:', error);
+    res.status(500).json({ message: 'Error al vincular el tablero' });
+  }
+};
 
 export const getDeliverablesByProject = async (req, res) => {
   try {

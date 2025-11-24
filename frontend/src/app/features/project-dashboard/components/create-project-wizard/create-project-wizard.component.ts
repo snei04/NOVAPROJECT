@@ -33,12 +33,25 @@ export class CreateProjectWizardComponent {
   totalSteps = 3;
   isLoading = false;
 
-  // Paso 1: Proyecto
-  projectData: { title: string; description: string; backgroundColor: Colors } = {
+  // Paso 1: Proyecto y Gobernanza
+  projectData: { 
+    title: string; 
+    description: string; 
+    backgroundColor: Colors;
+    generalObjective: string;
+    scopeDefinition: string;
+    budgetEstimated: number;
+  } = {
     title: '',
     description: '',
-    backgroundColor: 'sky'
+    backgroundColor: 'sky',
+    generalObjective: '',
+    scopeDefinition: '',
+    budgetEstimated: 0
   };
+
+  specificObjectives: string[] = [];
+  newSpecificObjective = '';
 
   availableColors: Colors[] = [
     'sky',
@@ -66,9 +79,15 @@ export class CreateProjectWizardComponent {
 
   nextStep(): void {
     if (this.currentStep < this.totalSteps) {
-      if (this.currentStep === 1 && !this.projectData.title) {
-        alert('Por favor asigna un nombre al proyecto');
-        return;
+      if (this.currentStep === 1) {
+         if (!this.projectData.title) {
+            alert('Por favor asigna un nombre al proyecto');
+            return;
+         }
+         if (!this.projectData.generalObjective || !this.projectData.scopeDefinition || this.specificObjectives.length === 0) {
+             alert('Por favor completa los campos de gobernanza (Objetivo General, Alcance y al menos un Objetivo Específico) para continuar.');
+             return;
+         }
       }
       this.currentStep++;
     } else {
@@ -83,6 +102,18 @@ export class CreateProjectWizardComponent {
       // Si estamos en el paso 1, volver al dashboard principal
       this.router.navigate(['/app/project-dashboard']);
     }
+  }
+
+  // Métodos Gobernanza (Paso 1)
+  addSpecificObjective() {
+      if (this.newSpecificObjective.trim()) {
+          this.specificObjectives.push(this.newSpecificObjective.trim());
+          this.newSpecificObjective = '';
+      }
+  }
+
+  removeSpecificObjective(index: number) {
+      this.specificObjectives.splice(index, 1);
   }
 
   // Métodos Paso 2
@@ -115,7 +146,11 @@ export class CreateProjectWizardComponent {
     // 1. Crear Tablero (Proyecto)
     this.boardsService.createBoard(
       this.projectData.title,
-      this.projectData.backgroundColor
+      this.projectData.backgroundColor,
+      this.projectData.generalObjective,
+      this.projectData.scopeDefinition,
+      this.specificObjectives.map(obj => ({ content: obj })),
+      this.projectData.budgetEstimated
     ).pipe(
       switchMap((newBoard: any) => {
         const boardId = newBoard.id || newBoard.data?.id; // Ajustar según respuesta

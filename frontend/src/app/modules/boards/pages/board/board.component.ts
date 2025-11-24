@@ -19,12 +19,13 @@ import { List } from '@models/list.model';
 import { Activity } from '@models/activity.model';
 import { BACKGROUNDS } from '@models/colors.model';
 import { AssociateDialogComponent } from '@boards/components/associate-dialog/associate-dialog.component';
+import { BoardSettingsDialogComponent } from '@boards/components/board-settings-dialog/board-settings-dialog.component';
 
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
-  standalone: true, // <-- AÑADIDO
-  imports: [ // <-- AÑADIDO
+  standalone: true, 
+  imports: [ 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
@@ -147,6 +148,25 @@ openAssociateDialog() {
     });
   }
 
+  openSettingsDialog() {
+    if (!this.board) return;
+
+    const dialogRef = this.dialog.open(BoardSettingsDialogComponent, {
+      minWidth: '600px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      data: {
+        board: this.board
+      }
+    });
+
+    dialogRef.closed.subscribe(result => {
+        if (result) {
+            this.getBoard(this.board!.id); // Reload board to see changes
+        }
+    });
+  }
+
   private getBoard(id: string) {
     this.boardsService.getBoard(id).subscribe(board => {
       this.board = board;
@@ -265,9 +285,9 @@ openAssociateDialog() {
       this.isInvitingMember = true;
       const { email } = this.inviteMemberForm.getRawValue();
       this.boardsService.addMember(this.board.id, email).subscribe({
-        next: () => {
+        next: (res: any) => {
           this.isInvitingMember = false;
-          this.toastr.success('Usuario invitado exitosamente');
+          this.toastr.success(res.message || 'Usuario invitado exitosamente');
           this.getBoard(this.board!.id);
           this.inviteMemberForm.reset();
         },

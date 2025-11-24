@@ -11,11 +11,19 @@ import {
   createStakeholder,
   getAllStakeholders,
   createActionItem,
-  updateActionItemStatus
+  updateActionItemStatus,
+  inviteStakeholder
 } from '../controllers/stakeholders.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
+
+/**
+ * @route   POST /api/stakeholders/:id/invite
+ * @desc    Invitar a un stakeholder al sistema
+ * @access  Private
+ */
+router.post('/:id/invite', protect, inviteStakeholder);
 
 /**
  * @route   POST /api/stakeholders/action-items

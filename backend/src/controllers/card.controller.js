@@ -1,6 +1,7 @@
 import pool from '../config/database.js';
 import CardService from '../services/card.service.js';
 import { sendMail } from '../services/mail.service.js';
+import DeliverableService from '../services/deliverable.service.js';
 
 // --- CREAR TARJETA (Solo para Dueños) ---
 export const createCard = async (req, res) => {
@@ -92,7 +93,7 @@ export const deleteCard = async (req, res) => {
         const userId = req.user.id;
 
         const [permissionRows] = await pool.query(`
-            SELECT b.user_id 
+            SELECT b.user_id, b.id as board_id
             FROM cards c
             JOIN lists l ON c.list_id = l.id
             JOIN boards b ON l.board_id = b.id
@@ -107,7 +108,12 @@ export const deleteCard = async (req, res) => {
             return res.status(403).json({ message: 'Solo los dueños del tablero pueden eliminar tarjetas.' });
         }
         
+        const boardId = permissionRows[0].board_id;
         await pool.query('DELETE FROM cards WHERE id = ?', [id]);
+        
+        // Check if deleting this card completed the board
+        await DeliverableService.checkAndCompleteDeliverables(boardId);
+        
         res.status(200).json({ message: 'Tarjeta eliminada exitosamente' });
     } catch (error) {
         console.error(error);

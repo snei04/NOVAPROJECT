@@ -1,5 +1,89 @@
 import pool from '../config/database.js';
 import crypto from 'crypto';
+import { sendMail } from '../services/mail.service.js';
+
+/**
+ * Invitar a un stakeholder al sistema (Vincular con usuario)
+ */
+export const inviteStakeholder = async (req, res) => {
+  try {
+    const { id } = req.params; // Stakeholder ID
+    const { email } = req.body; // Optional override, otherwise use stored email
+
+    // 1. Obtener stakeholder
+    const [stakeholderRows] = await pool.query('SELECT * FROM stakeholders WHERE id = ?', [id]);
+    if (stakeholderRows.length === 0) {
+      return res.status(404).json({ message: 'Stakeholder no encontrado' });
+    }
+    const stakeholder = stakeholderRows[0];
+    
+    // 2. Determinar email
+    let targetEmail = email;
+    if (!targetEmail && stakeholder.contact_info) {
+        // Handle both string and object JSON
+        const contact = typeof stakeholder.contact_info === 'string' 
+            ? JSON.parse(stakeholder.contact_info) 
+            : stakeholder.contact_info;
+        targetEmail = contact.email;
+    }
+
+    if (!targetEmail) {
+        return res.status(400).json({ message: 'No hay email asociado al stakeholder. Proporcione uno.' });
+    }
+
+    // 3. Buscar usuario
+    const [userRows] = await pool.query('SELECT id, nombre FROM usuarios WHERE email = ?', [targetEmail]);
+    
+    if (userRows.length === 0) {
+        // Caso: Usuario no existe. Enviamos correo de invitación para registrarse.
+        const registerLink = 'http://localhost:4200/register'; // Ajustar según frontend
+        await sendMail(targetEmail, 'Invitación a NovaProject', `
+            <h1>Bienvenido a NovaProject</h1>
+            <p>Has sido identificado como interesado en el proyecto <b>${stakeholder.name}</b>.</p>
+            <p>Por favor regístrate para acceder y colaborar:</p>
+            <a href="${registerLink}">Registrarse</a>
+        `);
+        return res.status(200).json({ message: 'Usuario no registrado. Se ha enviado un correo de invitación.' });
+    }
+
+    const user = userRows[0];
+
+    // 4. Vincular usuario al stakeholder
+    await pool.query('UPDATE stakeholders SET user_id = ? WHERE id = ?', [user.id, id]);
+
+    // 5. Dar acceso al tablero (Project)
+    // Verificar si ya es miembro
+    const [memberRows] = await pool.query(
+        'SELECT * FROM board_members WHERE board_id = ? AND user_id = ?',
+        [stakeholder.project_id, user.id]
+    );
+
+    if (memberRows.length === 0) {
+        await pool.query(
+            'INSERT INTO board_members (board_id, user_id, role) VALUES (?, ?, ?)',
+            [stakeholder.project_id, user.id, 'stakeholder']
+        );
+    } else {
+        // Opcional: Actualizar rol si es necesario, pero mejor no degradar permisos si ya era admin
+        // Si es 'observer' o algo menor, quizás subirlo? Lo dejamos así por ahora.
+    }
+
+    // 6. Notificar
+    const dashboardLink = `http://localhost:4200/app/boards/${stakeholder.project_id}`;
+    await sendMail(targetEmail, 'Acceso concedido a NovaProject', `
+        <h1>Tienes acceso al proyecto</h1>
+        <p>Hola ${user.nombre},</p>
+        <p>Ahora tienes acceso como Stakeholder al proyecto. Puedes revisar entregables y actualizar riesgos.</p>
+        <a href="${dashboardLink}">Ir al Tablero</a>
+    `);
+
+    res.status(200).json({ message: 'Stakeholder vinculado y acceso concedido exitosamente.' });
+
+  } catch (error) {
+    console.error('Error invitando stakeholder:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
 
 /**
  * Obtener todos los stakeholders de un proyecto

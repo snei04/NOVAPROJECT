@@ -11,4 +11,14 @@ export interface Board {
   lists: List[];
   cards: Card[];
   userRole?: 'owner' | 'member';
+
+  // Governance
+  generalObjective?: string;
+  scopeDefinition?: string;
+  specificObjectives?: { content: string }[];
+
+  // Financials
+  budgetEstimated?: number;
+  budgetActual?: number;
+  projectBenefit?: number;
 }

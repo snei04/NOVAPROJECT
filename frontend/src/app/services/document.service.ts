@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Document, CreateDocumentDto, UpdateDocumentDto } from '../models/document.model';
 import { environment } from '../../environments/environment';
+import { checkToken } from '@interceptors/token.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +22,7 @@ export class DocumentService {
    * Obtener todos los documentos no archivados
    */
   getDocuments(): Observable<Document[]> {
-    return this.http.get<Document[]>(this.apiUrl).pipe(
+    return this.http.get<Document[]>(this.apiUrl, { context: checkToken() }).pipe(
       tap(documents => this.documentsSubject.next(documents))
     );
   }
@@ -30,7 +31,7 @@ export class DocumentService {
    * Obtener un documento específico por ID
    */
   getDocument(id: string): Observable<Document> {
-    return this.http.get<Document>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.get<Document>(`${this.apiUrl}/${id}`, { context: checkToken() }).pipe(
       tap(document => this.currentDocumentSubject.next(document))
     );
   }
@@ -39,7 +40,7 @@ export class DocumentService {
    * Crear un nuevo documento
    */
   createDocument(data: CreateDocumentDto): Observable<Document> {
-    return this.http.post<Document>(this.apiUrl, data).pipe(
+    return this.http.post<Document>(this.apiUrl, data, { context: checkToken() }).pipe(
       tap(newDocument => {
         const currentDocs = this.documentsSubject.value;
         this.documentsSubject.next([...currentDocs, newDocument]);
@@ -51,7 +52,7 @@ export class DocumentService {
    * Actualizar un documento existente
    */
   updateDocument(id: string, data: UpdateDocumentDto): Observable<Document> {
-    return this.http.put<Document>(`${this.apiUrl}/${id}`, data).pipe(
+    return this.http.put<Document>(`${this.apiUrl}/${id}`, data, { context: checkToken() }).pipe(
       tap(updatedDocument => {
         const currentDocs = this.documentsSubject.value;
         const index = currentDocs.findIndex(doc => doc.id === id);
@@ -70,7 +71,7 @@ export class DocumentService {
    * Archivar un documento (soft delete)
    */
   archiveDocument(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, { context: checkToken() }).pipe(
       tap(() => {
         const currentDocs = this.documentsSubject.value.filter(doc => doc.id !== id);
         this.documentsSubject.next(currentDocs);
@@ -85,7 +86,14 @@ export class DocumentService {
    * Obtener documentos hijos de un documento padre
    */
   getChildDocuments(parentId: string): Observable<Document[]> {
-    return this.http.get<Document[]>(`${this.apiUrl}/children/${parentId}`);
+    return this.http.get<Document[]>(`${this.apiUrl}/children/${parentId}`, { context: checkToken() });
+  }
+
+  /**
+   * Invitar colaborador
+   */
+  inviteCollaborator(id: string, email: string, role: string = 'editor'): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/invite`, { email, role }, { context: checkToken() });
   }
 
   /**

@@ -6,13 +6,16 @@ class BoardService {
    * Crea un nuevo tablero y asigna al creador como el primer miembro con rol de 'owner'.
    * Usa una transacción para asegurar la integridad de los datos.
    */
-  async createBoard({ title, backgroundColor, userId }) {
+  async createBoard({ title, backgroundColor, userId, generalObjective, scopeDefinition, specificObjectives }) {
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
+      
+      const objectivesJson = specificObjectives ? JSON.stringify(specificObjectives) : null;
+
       const [boardResult] = await connection.query(
-        'INSERT INTO boards (title, backgroundColor, user_id) VALUES (?, ?, ?)',
-        [title, backgroundColor, userId]
+        'INSERT INTO boards (title, backgroundColor, user_id, general_objective, scope_definition, specific_objectives) VALUES (?, ?, ?, ?, ?, ?)',
+        [title, backgroundColor, userId, generalObjective, scopeDefinition, objectivesJson]
       );
       const boardId = boardResult.insertId;
       await connection.query(
@@ -30,7 +33,15 @@ class BoardService {
       }
 
       await connection.commit();
-      return { id: boardId, title, backgroundColor, user_id: userId };
+      return { 
+        id: boardId, 
+        title, 
+        backgroundColor, 
+        user_id: userId,
+        general_objective: generalObjective,
+        scope_definition: scopeDefinition,
+        specific_objectives: specificObjectives
+      };
     } catch (error) {
       await connection.rollback();
       throw error; // Lanza el error para que el controlador lo maneje
@@ -59,12 +70,23 @@ class BoardService {
 
   /**
    * Obtiene todos los detalles de un tablero específico, incluyendo listas,
-   * tarjetas, miembros, etiquetas y asignados.
+   * tarjetas, miembros, etiquetas, asignados y métricas financieras.
    */
   async getFullBoardDetails(boardId) {
     const [boardRows] = await pool.query('SELECT * FROM boards WHERE id = ?', [boardId]);
     if (boardRows.length === 0) return null;
     const board = boardRows[0];
+
+    // Calculate financial metrics
+    board.financials = {
+      budgetEstimated: Number(board.budget_estimated || 0),
+      budgetActual: Number(board.budget_actual || 0),
+      projectBenefit: Number(board.project_benefit || 0),
+      deviation: Number(board.budget_actual || 0) - Number(board.budget_estimated || 0),
+      roi: Number(board.budget_actual) > 0 
+        ? ((Number(board.project_benefit || 0) - Number(board.budget_actual)) / Number(board.budget_actual)) * 100 
+        : 0
+    };
 
     const [lists] = await pool.query('SELECT * FROM lists WHERE board_id = ? ORDER BY position', [boardId]);
     const [cards] = await pool.query('SELECT id, title, description, position, due_date, list_id, is_completed FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?) ORDER BY position', [boardId]);
@@ -94,7 +116,7 @@ class BoardService {
   }
 
   async updateBoard(boardId, updates) {
-    const { title, backgroundColor } = updates;
+    const { title, backgroundColor, budgetEstimated, budgetActual, projectBenefit, generalObjective, scopeDefinition, specificObjectives } = updates;
     const fields = [];
     const values = [];
 
@@ -106,6 +128,30 @@ class BoardService {
       fields.push('backgroundColor = ?');
       values.push(backgroundColor);
     }
+    if (budgetEstimated !== undefined) {
+      fields.push('budget_estimated = ?');
+      values.push(budgetEstimated);
+    }
+    if (budgetActual !== undefined) {
+      fields.push('budget_actual = ?');
+      values.push(budgetActual);
+    }
+    if (projectBenefit !== undefined) {
+      fields.push('project_benefit = ?');
+      values.push(projectBenefit);
+    }
+    if (generalObjective !== undefined) {
+      fields.push('general_objective = ?');
+      values.push(generalObjective);
+    }
+    if (scopeDefinition !== undefined) {
+      fields.push('scope_definition = ?');
+      values.push(scopeDefinition);
+    }
+    if (specificObjectives !== undefined) {
+      fields.push('specific_objectives = ?');
+      values.push(specificObjectives ? JSON.stringify(specificObjectives) : null);
+    }
 
     if (fields.length === 0) return; // No hay nada que actualizar
 
@@ -113,6 +159,7 @@ class BoardService {
     const query = `UPDATE boards SET ${fields.join(', ')} WHERE id = ?`;
     await pool.query(query, values);
   }
+
   /**
    * Añade un nuevo miembro a un tablero.
    */

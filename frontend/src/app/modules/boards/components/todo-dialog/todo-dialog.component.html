@@ -17,7 +17,7 @@
         
         @if (isEditingDescription) {
           <div>
-            <textarea [formControl]="descriptionInput" rows="3" class="w-full bg-white border-gray-300 border-2 rounded p-2"></textarea>
+            <textarea [formControl]="descriptionInput" rows="3" class="w-full bg-white border-gray-300 border-2 rounded p-2 text-black"></textarea>
             <div class="flex space-x-2 mt-2">
               <app-btn color="success" (click)="saveDescription()">Guardar Cambios</app-btn>
               <app-btn color="primary" (click)="saveAndComplete()">Guardar y Completar</app-btn>
@@ -41,12 +41,12 @@
     </div>
     <div class="flex flex-auto space-y-2 flex-col">
       <div>
-        <h4 class="text-sm font-semibold mb-1">Fecha Vencimiento</h4>
+        <h4 class="text-sm font-semibold mb-1 text-gray-800">Fecha Vencimiento</h4>
         <input 
             type="datetime-local" 
             [formControl]="dueDateInput"
             (change)="saveDueDate()"
-            class="w-full bg-gray-200 border-none rounded p-2 text-sm"
+            class="w-full bg-gray-200 border-none rounded p-2 text-sm text-black"
         >
       </div>
       <app-btn
@@ -56,7 +56,7 @@
         (click)="isOpenMembers = !isOpenMembers">
         <span class="flex space-x-2 text-left">
           <fa-icon class="text-gray-800" [icon]="faUser"></fa-icon>
-          <span>Miembros</span>
+          <span class="text-black">Miembros</span>
         </span>
       </app-btn>
 
@@ -67,7 +67,7 @@
         (click)="isOpenLabels = !isOpenLabels">
         <span class="flex space-x-2 text-left">
           <fa-icon class="text-gray-800" [icon]="faTag"></fa-icon>
-          <span>Etiquetas</span>
+          <span class="text-black">Etiquetas</span>
         </span>
       </app-btn>
 
@@ -111,15 +111,15 @@
   [cdkConnectedOverlayOpen]="isOpenLabels"
   (overlayOutsideClick)="isOpenLabels = false">
   <div class="z-50 my-2 w-60 bg-white rounded shadow-lg p-4">
-    <h3 class="text-center font-semibold mb-2">Etiquetas</h3>
+    <h3 class="text-center font-semibold mb-2 text-gray-800">Etiquetas</h3>
     
     <ul class="space-y-2">
       @for (label of boardLabels; track label.id) {
         <li class="flex items-center justify-between p-1 rounded">
           @if (editingLabelId === label.id) {
             <form (ngSubmit)="saveLabelChanges()" [formGroup]="formEditLabel" class="w-full space-y-2">
-              <input type="text" formControlName="name" class="w-full bg-gray-100 border rounded px-2 py-1 text-sm">
-              <select formControlName="color" class="w-full bg-gray-100 border rounded px-2 py-1 text-sm">
+              <input type="text" formControlName="name" class="w-full bg-gray-100 border rounded px-2 py-1 text-sm text-black">
+              <select formControlName="color" class="w-full bg-gray-100 border rounded px-2 py-1 text-sm text-black">
                 <option value="red">Rojo</option>
                 <option value="green">Verde</option>
                 <option value="blue">Azul</option>
@@ -157,15 +157,15 @@
     </ul>
 
     <hr class="my-4"/>
-    <h4 class="font-semibold mb-2">Crear nueva etiqueta</h4>
+    <h4 class="font-semibold mb-2 text-gray-600">Crear nueva etiqueta</h4>
     <form (ngSubmit)="createLabel()" [formGroup]="formLabel" class="space-y-2">
       <div>
         <label class="text-sm font-medium">Nombre</label>
-        <input type="text" formControlName="name" class="w-full bg-gray-100 border rounded px-2 py-1 text-sm">
+        <input type="text" formControlName="name" class="w-full bg-gray-100 border rounded px-2 py-1 text-sm text-black">
       </div>
       <div>
         <label class="text-sm font-medium">Color</label>
-        <select formControlName="color" class="w-full bg-gray-100 border rounded px-2 py-1 text-sm">
+        <select formControlName="color" class="w-full bg-gray-100 border rounded px-2 py-1 text-sm text-black">
           <option value="red">Rojo</option>
           <option value="green">Verde</option>
           <option value="blue">Azul</option>

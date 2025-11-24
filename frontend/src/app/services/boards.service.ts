@@ -37,10 +37,21 @@ export class BoardsService {
     // );
   }
 
-  createBoard(title: string, backgroundColor: Colors) {
+  createBoard(
+    title: string, 
+    backgroundColor: Colors,
+    generalObjective?: string,
+    scopeDefinition?: string,
+    specificObjectives?: any[],
+    budgetEstimated?: number
+  ) {
     return this.http.post<Board>(`${this.apiUrl}/api/v1/boards`, {
       title,
-      backgroundColor
+      backgroundColor,
+      generalObjective,
+      scopeDefinition,
+      specificObjectives,
+      budgetEstimated
     }, {
       context: checkToken(),
     })

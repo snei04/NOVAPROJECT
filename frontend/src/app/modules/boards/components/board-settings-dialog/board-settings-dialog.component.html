@@ -1,0 +1,129 @@
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-gray-200 dark:border-gray-700">
+    <!-- Header -->
+    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
+      <h2 class="text-xl font-bold dark:text-white">Configuración del Proyecto</h2>
+      <button (click)="close()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">✕</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <button 
+        (click)="activeTab = 'general'"
+        class="flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors"
+        [class.border-blue-600]="activeTab === 'general'"
+        [class.text-blue-600]="activeTab === 'general'"
+        [class.border-transparent]="activeTab !== 'general'"
+        [class.text-gray-500]="activeTab !== 'general'">
+        General
+      </button>
+      <button 
+        (click)="activeTab = 'governance'"
+        class="flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors"
+        [class.border-blue-600]="activeTab === 'governance'"
+        [class.text-blue-600]="activeTab === 'governance'"
+        [class.border-transparent]="activeTab !== 'governance'"
+        [class.text-gray-500]="activeTab !== 'governance'">
+        Gobernanza
+      </button>
+      <button 
+        (click)="activeTab = 'finance'"
+        class="flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors"
+        [class.border-blue-600]="activeTab === 'finance'"
+        [class.text-blue-600]="activeTab === 'finance'"
+        [class.border-transparent]="activeTab !== 'finance'"
+        [class.text-gray-500]="activeTab !== 'finance'">
+        Finanzas
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="p-6 overflow-y-auto flex-1 bg-white dark:bg-gray-800">
+      
+      <!-- Tab General -->
+      <div *ngIf="activeTab === 'general'" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-300">Nombre del Tablero</label>
+          <input [(ngModel)]="board.title" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1 dark:text-gray-300">Color de Fondo</label>
+            <select [(ngModel)]="board.backgroundColor" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="sky">Cielo</option>
+                <option value="yellow">Amarillo</option>
+                <option value="green">Verde</option>
+                <option value="red">Rojo</option>
+                <option value="violet">Violeta</option>
+                <option value="gray">Gris</option>
+            </select>
+        </div>
+      </div>
+
+      <!-- Tab Gobernanza -->
+      <div *ngIf="activeTab === 'governance'" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-300">Objetivo General</label>
+          <textarea [(ngModel)]="board.generalObjective" rows="3" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-300">Definición del Alcance</label>
+          <textarea [(ngModel)]="board.scopeDefinition" rows="3" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-300">Objetivos Específicos</label>
+          <div class="space-y-2">
+              <div *ngFor="let obj of board.specificObjectives; let i = index" class="flex gap-2">
+                  <input [(ngModel)]="obj.content" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                  <button (click)="removeSpecificObjective(i)" class="text-red-500 hover:text-red-700 font-bold px-2">✕</button>
+              </div>
+              <button (click)="addSpecificObjective()" class="text-sm text-blue-600 hover:text-blue-800">+ Añadir objetivo</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Finanzas -->
+      <div *ngIf="activeTab === 'finance'" class="space-y-6">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-1 dark:text-gray-300">Presupuesto Estimado</label>
+                <input [(ngModel)]="board.budgetEstimated" type="number" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 dark:text-gray-300">Costo Real (Actual)</label>
+                <input [(ngModel)]="board.budgetActual" type="number" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 dark:text-gray-300">Beneficio Proyectado</label>
+                <input [(ngModel)]="board.projectBenefit" type="number" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            </div>
+        </div>
+
+        <!-- Análisis de Desviación -->
+        <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+            <h3 class="text-md font-bold mb-3 dark:text-white">Análisis de Desviación</h3>
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm dark:text-gray-300">Variación (Presupuesto - Costo):</span>
+                <span class="font-mono font-bold" [class.text-green-600]="calculateVariance() >= 0" [class.text-red-600]="calculateVariance() < 0">
+                    {{ calculateVariance() | currency }}
+                </span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-sm dark:text-gray-300">ROI Estimado:</span>
+                <span class="font-mono font-bold text-blue-600">
+                    {{ calculateROI() | number:'1.1-2' }}%
+                </span>
+            </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-900">
+      <button (click)="close()" class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400">Cancelar</button>
+      <button (click)="save()" [disabled]="isSaving" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+        {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
+      </button>
+    </div>
+  </div>
+</div>

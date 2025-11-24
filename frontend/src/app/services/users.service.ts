@@ -18,4 +18,11 @@ export class UsersService {
       context: checkToken(),
     });
   }
+
+  searchUsers(query: string) {
+    return this.http.get<User[]>(`${this.apiUrl}/api/v1/users/search`, {
+      params: { query },
+      context: checkToken(),
+    });
+  }
 }

@@ -53,6 +53,16 @@ export class StakeholderDashboardComponent implements OnInit {
     dueDate: ''
   };
 
+  // Estado del Modal de Stakeholder
+  showStakeholderModal = false;
+  isCreatingStakeholder = false;
+  newStakeholder: Partial<Stakeholder> = {
+    name: '',
+    role: '',
+    priority: 'medium',
+    contactInfo: { email: '' }
+  };
+
   // Calendario
   showCalendar = false;
   calendarOptions: CalendarOptions = {
@@ -219,5 +229,61 @@ export class StakeholderDashboardComponent implements OnInit {
         alert('Error al crear el compromiso');
       }
     });
+  }
+
+  // Métodos para Stakeholder
+  openStakeholderModal() {
+    this.newStakeholder = {
+      name: '',
+      role: '',
+      priority: 'medium',
+      contactInfo: { email: '' }
+    };
+    this.showStakeholderModal = true;
+  }
+
+  closeStakeholderModal() {
+    this.showStakeholderModal = false;
+  }
+
+  createStakeholder() {
+    if (!this.newStakeholder.name || !this.newStakeholder.role || !this.newStakeholder.contactInfo?.email) {
+      alert('Por favor completa nombre, rol y email');
+      return;
+    }
+
+    this.isCreatingStakeholder = true;
+    if (this.selectedProject) {
+      this.newStakeholder.projectId = this.selectedProject.id;
+    }
+
+    this.stakeholderService.createStakeholder(this.newStakeholder).subscribe({
+      next: (s) => {
+        this.stakeholders.push(s);
+        this.isCreatingStakeholder = false;
+        this.closeStakeholderModal();
+      },
+      error: (err) => {
+        console.error(err);
+        this.isCreatingStakeholder = false;
+        alert('Error al crear stakeholder');
+      }
+    });
+  }
+
+  inviteStakeholder(s: Stakeholder) {
+    if (confirm(`¿Enviar invitación a ${s.name} (${s.contactInfo?.email})?`)) {
+      if (s.id && s.contactInfo?.email) {
+        this.stakeholderService.inviteStakeholder(s.id, s.contactInfo.email).subscribe({
+          next: (res) => {
+            alert(res.message || 'Invitación enviada');
+          },
+          error: (err) => {
+            console.error(err);
+            alert(err.error?.message || 'Error al invitar');
+          }
+        });
+      }
+    }
   }
 }

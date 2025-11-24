@@ -1,0 +1,84 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-200 dark:border-gray-700 transform transition-all">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <span>👥</span> Compartir Documento
+      </h3>
+      <button (click)="close.emit()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors rounded-full p-1 hover:bg-gray-200 dark:hover:bg-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Body -->
+    <div class="p-6 space-y-5">
+      <!-- Input Email -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          Invitar por correo o nombre
+        </label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span class="text-gray-500">✉️</span>
+          </div>
+          <input 
+            type="text" 
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="onSearch($event)"
+            class="pl-10 w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 transition-shadow"
+            placeholder="ejemplo@correo.com"
+          >
+          
+          <!-- Search Results Dropdown -->
+          <div *ngIf="searchResults.length > 0 && !selectedUser" class="absolute z-20 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-auto">
+            <div 
+              *ngFor="let user of searchResults"
+              (click)="selectUser(user)"
+              class="p-2.5 hover:bg-blue-50 dark:hover:bg-gray-600 cursor-pointer flex items-center gap-3 border-b last:border-0 border-gray-100 dark:border-gray-600 transition-colors"
+            >
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-sm overflow-hidden">
+                <img *ngIf="user.avatar" [src]="user.avatar" class="w-full h-full object-cover">
+                <span *ngIf="!user.avatar">{{ user.name?.charAt(0) | uppercase }}</span>
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ user.name }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-300">{{ user.email }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+          Si el usuario no está registrado, se le enviará una invitación por correo.
+        </p>
+      </div>
+
+      <!-- Input Role -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          Permisos
+        </label>
+        <div class="relative">
+           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span class="text-gray-500">🔒</span>
+          </div>
+          <select [(ngModel)]="role" class="pl-10 w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-pointer appearance-none bg-no-repeat bg-right">
+            <option value="editor">✏️ Editor (Puede editar)</option>
+            <option value="viewer">👀 Visualizador (Solo ver)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+      <button (click)="close.emit()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors focus:ring-2 focus:ring-gray-200">
+        Cancelar
+      </button>
+      <button (click)="onInvite()" [disabled]="!searchQuery" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+        Enviar Invitación
+      </button>
+    </div>
+  </div>
+</div>

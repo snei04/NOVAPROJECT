@@ -117,6 +117,29 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  showShareDialog = false;
+
+  openShareDialog() {
+    this.showShareDialog = true;
+  }
+
+  onInvite(data: { email: string, role: string }) {
+    if (this.document) {
+      this.documentService.inviteCollaborator(this.document.id, data.email, data.role)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (res) => {
+            alert(res.message || 'Invitación enviada');
+            this.showShareDialog = false;
+          },
+          error: (err) => {
+            console.error(err);
+            alert(err.error?.message || 'Error al invitar');
+          }
+        });
+    }
+  }
+
   archiveDocument(): void {
     if (this.document && confirm('¿Estás seguro de archivar este documento?')) {
       this.documentService.archiveDocument(this.document.id)

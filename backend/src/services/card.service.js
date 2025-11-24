@@ -1,6 +1,7 @@
 // src/services/card.service.js
 import pool from '../config/database.js';
 import ActivityService from './activity.service.js';
+import DeliverableService from './deliverable.service.js';
 
 class CardService {
   async createCard({ title, listId, position, description, dueDate }) {
@@ -66,6 +67,12 @@ class CardService {
       boardId: cardData.board_id,
       userId: user.id
     });
+
+    // --- 5. Verificar entregables vinculados ---
+    console.log('--- 5. Verificando entregables vinculados ---');
+    // No esperamos a que termine para no bloquear la respuesta, o sí?
+    // Mejor esperamos para asegurar consistencia.
+    await DeliverableService.checkAndCompleteDeliverables(cardData.board_id);
 
   } catch (error) {
     // Este catch ahora maneja cualquier error que ocurra en la función
