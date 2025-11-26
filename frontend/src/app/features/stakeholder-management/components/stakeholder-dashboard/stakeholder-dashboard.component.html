@@ -31,7 +31,7 @@
           👥 Stakeholders
           <span class="ml-2 text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{{ stakeholders.length }}</span>
         </h2>
-        <button (click)="openStakeholderModal()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200">
+        <button *ngIf="selectedProject.userRole !== 'viewer'" (click)="openStakeholderModal()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200">
           + Agregar
         </button>
       </div>
@@ -51,7 +51,7 @@
                 }" class="text-xs px-2 py-1 rounded-full">
                   {{ s.priority }}
                 </span>
-                <button *ngIf="!s.contactInfo?.userId && s.id" (click)="inviteStakeholder(s)" title="Invitar al Portal" class="text-blue-600 hover:text-blue-800">
+                <button *ngIf="!s.contactInfo?.userId && s.id && selectedProject.userRole !== 'viewer'" (click)="inviteStakeholder(s)" title="Invitar al Portal" class="text-blue-600 hover:text-blue-800">
                     ✉️
                 </button>
                 <span *ngIf="s.contactInfo?.userId" title="Usuario Vinculado" class="text-green-600 cursor-help">
@@ -80,7 +80,7 @@
           <button (click)="toggleCalendarView()" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200">
             {{ showCalendar ? 'Lista' : 'Calendario' }}
           </button>
-          <button (click)="openMeetingModal()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200">
+          <button *ngIf="selectedProject.userRole !== 'viewer'" (click)="openMeetingModal()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200">
             + Agendar
           </button>
         </div>
@@ -120,7 +120,7 @@
           ✅ Compromisos
           <span class="ml-2 text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{{ commitments.length }}</span>
         </h2>
-        <button (click)="openCommitmentModal()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200">
+        <button *ngIf="selectedProject.userRole !== 'viewer'" (click)="openCommitmentModal()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200">
           + Agregar
         </button>
       </div>

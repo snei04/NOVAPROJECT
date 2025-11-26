@@ -1,26 +1,30 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { BoardsService } from '../../services/boards.service';
 import { DashboardService, DashboardData } from '../../services/dashboard.service';
+import { BudgetService, BudgetSummary } from '@services/budget.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
   private boardsService = inject(BoardsService);
   private dashboardService = inject(DashboardService);
+  private budgetService = inject(BudgetService);
   private router = inject(Router);
 
   projects: any[] = [];
   selectedProject: any = null;
   dashboardData: DashboardData | null = null;
+  budgetSummary: BudgetSummary | null = null;
   loading = false;
+
 
   // Weekly Report Modal
   showReportModal = false;
@@ -51,6 +55,8 @@ export class DashboardComponent implements OnInit {
   loadDashboard() {
     if (!this.selectedProject) return;
     this.loading = true;
+    
+    // Cargar datos generales
     this.dashboardService.getDashboard(this.selectedProject.id).subscribe({
       next: (data) => {
         this.dashboardData = data;
@@ -58,6 +64,12 @@ export class DashboardComponent implements OnInit {
         this.loading = false;
       },
       error: () => this.loading = false
+    });
+
+    // Cargar presupuesto
+    this.budgetService.getBudgetSummary(this.selectedProject.id).subscribe({
+      next: (summary) => this.budgetSummary = summary,
+      error: (err) => console.error('Error loading budget summary', err)
     });
   }
 
@@ -110,6 +122,12 @@ export class DashboardComponent implements OnInit {
   submitReport() {
     if (!this.selectedProject) return;
     
+    // Permission Check
+    if (this.selectedProject.userRole === 'viewer') {
+        alert('No tienes permisos para crear reportes.');
+        return;
+    }
+
     const now = new Date();
     const weekNumber = this.getWeekNumber(now);
     

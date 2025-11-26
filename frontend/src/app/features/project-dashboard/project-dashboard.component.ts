@@ -12,7 +12,7 @@ import { BoardsService } from '../../services/boards.service';
       <div class="max-w-4xl mx-auto">
         <div class="flex justify-between items-center mb-8">
           <div>
-            <h1 class="text-3xl font-bold text-gray-900">📂 Mis Proyectos</h1>
+            <h1 class="text-3xl font-bold text-gray-900">Mis Proyectos</h1>
             <p class="text-gray-600 mt-2">Selecciona un proyecto para ver su Dashboard de Progreso</p>
           </div>
           <button [routerLink]="['create']" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
@@ -50,10 +50,10 @@ import { BoardsService } from '../../services/boards.service';
             </div>
             
             <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{{ project.title }}</h3>
-            <p class="text-gray-500 text-sm mb-4 line-clamp-2">{{ project.description || 'Sin descripción' }}</p>
+            <p class="text-gray-500 text-sm mb-4 line-clamp-2">{{ project.description || project.scope_definition || project.general_objective || 'Sin descripción' }}</p>
             
             <div class="flex items-center justify-between text-xs text-gray-500 border-t pt-4">
-              <span>Creado el {{ project.created_at | date:'mediumDate' }}</span>
+              <span>Creado el {{ (project.fecha_creacion || project.created_at || project.createdAt) | date:'mediumDate' }}</span>
               <span class="text-blue-600 font-medium group-hover:underline">Ver Dashboard</span>
             </div>
           </div>

@@ -49,6 +49,13 @@ Facilitamos la incorporación de nuevos miembros y colaboradores externos.
 *   **Acciones Rápidas:**
     *   **Agregar:** Formulario modal para registrar nuevos stakeholders con roles y prioridades.
     *   **Invitar:** Funcionalidad "One-click" para enviar invitaciones de acceso al portal.
+    *   **Roles Granulares:** Al invitar, se puede definir si el stakeholder tendrá permisos de **Editor** (Modificar tareas) o **Visualizador** (Solo lectura).
+    *   **Modo Solo Lectura:** Los usuarios con rol de visualizador tienen restringidas las acciones de creación y edición en:
+        *   Tablero Kanban (Listas/Tarjetas)
+        *   Gestión de Riesgos
+        *   Seguimiento de Entregables
+        *   Reportes Semanales (Solo ver historial)
+        *   Configuración del Proyecto (Gobernanza y Presupuesto)
     *   **Indicadores:** Visualización clara de qué stakeholders ya tienen acceso al sistema (🔗).
 
 #### Gestión de Proyecto y Finanzas (Mejoras 2 y 4)
@@ -91,4 +98,131 @@ Facilitamos la incorporación de nuevos miembros y colaboradores externos.
 3.  Verificar configuración de servicio de correo (`SMTP`) para las invitaciones.
 
 ---
+
+---
+
+# 🚀 NovaProject v2.2.2 - Release Notes
+## Módulo de Gestión Financiera y Presupuesto
+
+**Fecha de Lanzamiento:** 25 de Noviembre, 2025
+**Versión:** v2.2.2
+
+---
+
+### 📋 Resumen Ejecutivo
+Esta versión introduce el **Módulo de Gestión Financiera**, permitiendo a los gerentes de proyecto llevar un control detallado del presupuesto. Se pueden registrar rubros presupuestales (Budget Items), vincularlos a fases del proyecto (Milestones), categorizarlos y monitorear la ejecución en tiempo real (Aprobado vs. Ejecutado).
+
+---
+
+### ✨ Nuevas Funcionalidades
+
+#### 1. Tablero de Presupuesto (Budget Dashboard)
+Una nueva vista dedicada para la gestión económica del proyecto.
+*   **Selector de Proyectos:** Navegación fluida entre los presupuestos de diferentes proyectos.
+*   **Resumen Financiero:** Tarjetas de métricas clave:
+    *   💰 Presupuesto Aprobado Total.
+    *   💸 Presupuesto Ejecutado Total.
+    *   📉 Disponible (Cálculo en tiempo real).
+    *   📊 Porcentaje de Ejecución General.
+*   **Gestión de Items:** Tabla detallada para crear, editar y eliminar rubros de presupuesto.
+
+#### 2. Vinculación con Fases (Milestones)
+Integración profunda con la gestión del proyecto.
+*   Al crear un gasto, se puede asignar a un **Hito/Fase** específico del proyecto.
+*   Permite analizar costos por fase de desarrollo.
+
+#### 3. Integración en Dashboard Principal
+El Dashboard general del proyecto ahora incluye un widget de **Resumen Presupuestal** que muestra el estado financiero de un vistazo, complementando las métricas de progreso y riesgos.
+
+---
+
+### 🎨 Mejoras en Frontend (UI/UX)
+
+*   **Navegación:** Nuevo acceso directo "Presupuesto" en la barra de navegación principal (`/app/budget`).
+*   **Feedback Visual:**
+    *   Indicadores de color para el estado del presupuesto (Verde = Disponible, Rojo = Déficit).
+    *   Barras de progreso para visualizar el porcentaje de ejecución.
+*   **Formularios Dinámicos:** Modales de creación/edición con selectores inteligentes para Categorías y Milestones.
+
+---
+
+### 🛠️ Detalles Técnicos (Backend)
+
+#### Nueva Estructura de Datos
+*   **Tabla `budget_items`:**
+    *   `id`: UUID
+    *   `project_id`: FK -> boards
+    *   `milestone_id`: FK -> project_milestones
+    *   `category`: Consultoría, Licencias, Hardware, Personal, Cloud, Otros.
+    *   `amount_approved`: Decimal(15,2)
+    *   `amount_executed`: Decimal(15,2)
+    *   `justification`: Texto para explicar variaciones.
+
+#### Nuevos Endpoints API
+| Método | Ruta | Descripción |
+| :--- | :--- | :--- |
+| `GET` | `/api/budget/project/:boardId` | Obtener todos los items de un proyecto |
+| `GET` | `/api/budget/project/:boardId/summary` | Obtener resumen (totales) |
+| `POST` | `/api/budget/project/:boardId` | Crear nuevo item de presupuesto |
+| `PUT` | `/api/budget/:id` | Actualizar item existente |
+| `DELETE` | `/api/budget/:id` | Eliminar item |
+
+#### Correcciones Importantes
+*   **Base de Datos:** Corrección de `Collation Mismatch` (`utf8mb4_0900_ai_ci`) que causaba errores 500 en consultas con JOINs.
+*   **Mapeo de Datos:** Solución al problema de guardado de valores decimales y IDs (camelCase vs snake_case) en el servicio de presupuesto.
+*   **Persistencia de Configuración:** Se corrigió un error crítico donde los objetivos, alcance y presupuesto definidos en "Configuración del Proyecto" no se visualizaban al recargar, asegurando ahora la correcta carga y mapeo de estos datos.
+
+#### Seguridad y Permisos (Modo Solo Lectura)
+Se ha reforzado el rol de **Visualizador (Viewer)** en todos los módulos para garantizar la integridad de los datos:
+*   **Reportes Semanales:** Botones de creación y envío deshabilitados.
+*   **Presupuesto:** Acciones de crear, editar y eliminar items deshabilitadas (UI gris e inactiva).
+*   **Entregables:** Creación de nuevos entregables restringida visual y funcionalmente.
+*   **Backend:** Validaciones de seguridad adicionales en los endpoints para rechazar intentos de modificación por parte de usuarios sin permisos de edición.
+
+---
+
+### 📝 Pasos de Actualización
+1.  **Backend:** Reiniciar el servidor para aplicar los cambios de esquema de base de datos (script automático de creación de tabla `budget_items`).
+2.  **Frontend:** No requiere acciones adicionales, recargar la aplicación.
+
+---
 *NovaProject Team*
+
+---
+
+# 🚀 NovaProject v2.2.3 - Release Notes
+## Sincronización de Flujos y Refinamiento de UI
+
+**Fecha de Lanzamiento:** 25 de Noviembre, 2025
+**Versión:** v2.2.3
+
+---
+
+### 📋 Resumen Ejecutivo
+Esta actualización se centra en la **integración de flujos de trabajo** entre módulos (Entregables -> Kanban) y el **refinamiento de la interfaz de usuario**, abordando problemas de diseño y usabilidad reportados, así como la consolidación de las políticas de permisos.
+
+---
+
+### ✨ Nuevas Funcionalidades y Mejoras
+
+#### 1. Sincronización Entregables - Kanban
+Optimización del flujo de trabajo para gestores de proyecto.
+*   **Creación de Tareas desde Entregables:** Nuevo botón en el "Deliverable Tracker" que permite generar una tarjeta en el Tablero Kanban con un solo clic.
+*   **Mapeo Inteligente:** La tarea hereda el título, descripción y fecha límite del entregable. Si el estado del entregable coincide con una lista existente, se asigna automáticamente; de lo contrario, se crea en una lista por defecto ("Sin Lista").
+
+#### 2. Refinamiento de Interfaz (UI/UX)
+*   **Menú de Usuario (Navbar):** Se ha solucionado el problema de desbordamiento visual cuando el nombre o correo del usuario es demasiado largo. Ahora el texto se trunca elegantemente y muestra el contenido completo al pasar el cursor (tooltip).
+*   **Limpieza Visual:** Estandarización de títulos en los módulos de Presupuesto y Entregables para una apariencia más profesional (eliminación de emojis redundantes en encabezados).
+
+#### 3. Gobernanza y Permisos (Ajustes Finales)
+*   **Persistencia de Datos:** Verificación y corrección definitiva del mapeo de datos en la "Configuración del Proyecto", asegurando que los Objetivos, Alcance y Presupuesto se guarden y carguen correctamente (CamelCase mapping fix).
+*   **Roles Granulares:** Se han aplicado restricciones visuales y lógicas estrictas para el rol de **Visualizador** en el Dashboard de Stakeholders (invitación deshabilitada) y otros módulos críticos.
+
+---
+
+### 🛠️ Correcciones Técnicas
+*   **Frontend:** Ajuste de clases CSS (`truncate`, `min-w-0`) en el componente `Navbar` para manejo de desbordamiento de texto.
+*   **Backend:** Implementación del endpoint `createTaskFromDeliverable` para la lógica de sincronización automática.
+
+---
+

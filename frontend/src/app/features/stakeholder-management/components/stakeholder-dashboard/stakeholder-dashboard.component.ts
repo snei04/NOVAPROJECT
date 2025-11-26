@@ -273,10 +273,14 @@ export class StakeholderDashboardComponent implements OnInit {
 
   inviteStakeholder(s: Stakeholder) {
     if (confirm(`¿Enviar invitación a ${s.name} (${s.contactInfo?.email})?`)) {
+      // Preguntar por el rol
+      const isEditor = confirm(`¿Qué permisos asignar a ${s.name}?\n\n[Aceptar] = EDITOR (Puede modificar tareas)\n[Cancelar] = VISUALIZADOR (Solo lectura)`);
+      const role = isEditor ? 'editor' : 'viewer';
+
       if (s.id && s.contactInfo?.email) {
-        this.stakeholderService.inviteStakeholder(s.id, s.contactInfo.email).subscribe({
+        this.stakeholderService.inviteStakeholder(s.id, s.contactInfo.email, role).subscribe({
           next: (res) => {
-            alert(res.message || 'Invitación enviada');
+            alert(res.message || `Invitación enviada con rol: ${isEditor ? 'Editor' : 'Visualizador'}`);
           },
           error: (err) => {
             console.error(err);

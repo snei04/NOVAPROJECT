@@ -8,7 +8,7 @@ import { sendMail } from '../services/mail.service.js';
 export const inviteStakeholder = async (req, res) => {
   try {
     const { id } = req.params; // Stakeholder ID
-    const { email } = req.body; // Optional override, otherwise use stored email
+    const { email, role } = req.body; // Optional override, role: 'editor' | 'viewer'
 
     // 1. Obtener stakeholder
     const [stakeholderRows] = await pool.query('SELECT * FROM stakeholders WHERE id = ?', [id]);
@@ -31,6 +31,11 @@ export const inviteStakeholder = async (req, res) => {
         return res.status(400).json({ message: 'No hay email asociado al stakeholder. Proporcione uno.' });
     }
 
+    // Determinar rol en el tablero
+    // Si el rol solicitado es 'editor' o 'member', asignamos 'member' (escritura)
+    // De lo contrario 'viewer' (lectura)
+    const boardRole = (role === 'editor' || role === 'member') ? 'member' : 'viewer';
+
     // 3. Buscar usuario
     const [userRows] = await pool.query('SELECT id, nombre FROM usuarios WHERE email = ?', [targetEmail]);
     
@@ -40,6 +45,7 @@ export const inviteStakeholder = async (req, res) => {
         await sendMail(targetEmail, 'Invitación a NovaProject', `
             <h1>Bienvenido a NovaProject</h1>
             <p>Has sido identificado como interesado en el proyecto <b>${stakeholder.name}</b>.</p>
+            <p>Se te ha asignado el rol de: <b>${boardRole === 'member' ? 'Editor' : 'Visualizador'}</b>.</p>
             <p>Por favor regístrate para acceder y colaborar:</p>
             <a href="${registerLink}">Registrarse</a>
         `);
@@ -61,11 +67,14 @@ export const inviteStakeholder = async (req, res) => {
     if (memberRows.length === 0) {
         await pool.query(
             'INSERT INTO board_members (board_id, user_id, role) VALUES (?, ?, ?)',
-            [stakeholder.project_id, user.id, 'stakeholder']
+            [stakeholder.project_id, user.id, boardRole]
         );
     } else {
-        // Opcional: Actualizar rol si es necesario, pero mejor no degradar permisos si ya era admin
-        // Si es 'observer' o algo menor, quizás subirlo? Lo dejamos así por ahora.
+        // Actualizar rol si ya existe
+        await pool.query(
+            'UPDATE board_members SET role = ? WHERE board_id = ? AND user_id = ?',
+            [boardRole, stakeholder.project_id, user.id]
+        );
     }
 
     // 6. Notificar
@@ -73,7 +82,7 @@ export const inviteStakeholder = async (req, res) => {
     await sendMail(targetEmail, 'Acceso concedido a NovaProject', `
         <h1>Tienes acceso al proyecto</h1>
         <p>Hola ${user.nombre},</p>
-        <p>Ahora tienes acceso como Stakeholder al proyecto. Puedes revisar entregables y actualizar riesgos.</p>
+        <p>Ahora tienes acceso como Stakeholder (${boardRole === 'member' ? 'Editor' : 'Visualizador'}) al proyecto.</p>
         <a href="${dashboardLink}">Ir al Tablero</a>
     `);
 

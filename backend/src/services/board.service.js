@@ -77,14 +77,41 @@ class BoardService {
     if (boardRows.length === 0) return null;
     const board = boardRows[0];
 
-    // Calculate financial metrics
+    // Map snake_case to camelCase for frontend compatibility
+    board.generalObjective = board.general_objective;
+    board.scopeDefinition = board.scope_definition;
+    try {
+      board.specificObjectives = typeof board.specific_objectives === 'string' 
+        ? JSON.parse(board.specific_objectives) 
+        : board.specific_objectives;
+    } catch (e) {
+      board.specificObjectives = [];
+    }
+    board.projectBenefit = board.project_benefit;
+
+    // Calculate financial metrics from Budget Module (Source of Truth)
+    const [budgetStats] = await pool.query(`
+      SELECT 
+        SUM(amount_approved) as total_approved, 
+        SUM(amount_executed) as total_executed 
+      FROM budget_items 
+      WHERE project_id = ?
+    `, [boardId]);
+
+    const realEstimated = Number(budgetStats[0]?.total_approved || 0);
+    const realActual = Number(budgetStats[0]?.total_executed || 0);
+
+    // Update the board object with real values so frontend displays them
+    board.budgetEstimated = realEstimated;
+    board.budgetActual = realActual;
+
     board.financials = {
-      budgetEstimated: Number(board.budget_estimated || 0),
-      budgetActual: Number(board.budget_actual || 0),
+      budgetEstimated: realEstimated,
+      budgetActual: realActual,
       projectBenefit: Number(board.project_benefit || 0),
-      deviation: Number(board.budget_actual || 0) - Number(board.budget_estimated || 0),
-      roi: Number(board.budget_actual) > 0 
-        ? ((Number(board.project_benefit || 0) - Number(board.budget_actual)) / Number(board.budget_actual)) * 100 
+      deviation: realActual - realEstimated,
+      roi: realActual > 0 
+        ? ((Number(board.project_benefit || 0) - realActual) / realActual) * 100 
         : 0
     };
 

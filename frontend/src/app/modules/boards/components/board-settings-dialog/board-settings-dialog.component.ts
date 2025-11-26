@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { Board } from '@models/board.model';
 import { BoardsService } from '@services/boards.service';
+import { MilestoneService, Milestone } from '@services/milestone.service';
 
 @Component({
   selector: 'app-board-settings-dialog',
@@ -13,22 +14,34 @@ import { BoardsService } from '@services/boards.service';
 })
 export class BoardSettingsDialogComponent {
   board: Board;
-  activeTab: 'general' | 'governance' | 'finance' = 'general';
+  activeTab: 'general' | 'governance' | 'finance' | 'milestones' = 'general';
   isSaving = false;
+  milestones: Milestone[] = [];
 
   constructor(
     private dialogRef: DialogRef<boolean>,
     @Inject(DIALOG_DATA) public data: { board: Board },
-    private boardsService: BoardsService
+    private boardsService: BoardsService,
+    private milestoneService: MilestoneService
   ) {
     this.board = { ...data.board }; // Clone to avoid direct mutation
     // Ensure arrays exist
     if (!this.board.specificObjectives) {
         this.board.specificObjectives = [];
     }
+    this.loadMilestones();
+  }
+
+  loadMilestones() {
+      this.milestoneService.getMilestonesByProject(this.board.id).subscribe(ms => this.milestones = ms);
+  }
+
+  get canEdit(): boolean {
+      return this.board.userRole === 'owner' || this.board.userRole === 'member';
   }
 
   save() {
+    if (!this.canEdit) return;
     this.isSaving = true;
     // Extract fields to update
     const updates: any = {
@@ -66,6 +79,33 @@ export class BoardSettingsDialogComponent {
 
   removeSpecificObjective(index: number) {
       this.board.specificObjectives?.splice(index, 1);
+  }
+  
+  // Milestones Logic
+  addMilestone() {
+      const newMilestone: Milestone = {
+          projectId: this.board.id,
+          title: 'Nueva Fase',
+          dueDate: new Date().toISOString(),
+          status: 'pending',
+          priority: 'medium'
+      };
+      this.milestoneService.createMilestone(newMilestone).subscribe(m => {
+          this.milestones.push(m);
+      });
+  }
+
+  deleteMilestone(id: string) {
+      if(confirm('¿Eliminar esta fase?')) {
+        this.milestoneService.deleteMilestone(id).subscribe(() => {
+            this.milestones = this.milestones.filter(m => m.id !== id);
+        });
+      }
+  }
+  
+  updateMilestone(milestone: Milestone) {
+      if (!milestone.id) return;
+      this.milestoneService.updateMilestone(milestone.id, milestone).subscribe();
   }
   
   calculateVariance(): number {

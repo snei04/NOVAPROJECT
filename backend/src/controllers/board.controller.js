@@ -42,7 +42,16 @@ export const getMyBoards = async (req, res) => {
   const userId = req.user.id; // Obtenemos el ID del usuario del token
 
   try {
-    const [boards] = await pool.query('SELECT * FROM boards WHERE user_id = ?', [userId]);
+    const [boards] = await pool.query(`
+      SELECT DISTINCT b.*, 
+        CASE 
+          WHEN b.user_id = ? THEN 'owner'
+          ELSE bm.role 
+        END as userRole
+      FROM boards b
+      LEFT JOIN board_members bm ON b.id = bm.board_id
+      WHERE b.user_id = ? OR bm.user_id = ?
+    `, [userId, userId, userId]);
     res.status(200).json(boards);
   } catch (error) {
     console.error(error);

@@ -33,28 +33,35 @@
               </app-btn>
             </li>
             <li>
-              <a routerLink="/app/users" class="block py-3 px-4 text-white hover:text-gray-200 transition-colors">Usuarios</a>
+              <a routerLink="/app/users" class="block py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors font-semibold">Usuarios</a>
             </li>
             <li>
-              <a routerLink="/app/my-tasks" class="block py-3 px-4 text-white hover:text-gray-200 transition-colors">
+              <a routerLink="/app/my-tasks" class="block py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors font-semibold">
                 Mis Tareas
               </a>
             </li>
             <li>
-              <a routerLink="/app/stakeholders" class="block py-3 px-4 text-white hover:text-gray-200 transition-colors">Stakeholders</a>
+              <a routerLink="/app/stakeholders" class="block py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors font-semibold">Stakeholders</a>
             </li>
             <li>
               <a routerLink="/app/risk-management" 
                  class="block py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors font-semibold"
                  title="Risk Management Inteligente - Solución IMEVI">
-                ⚠️ Riesgos
+                Riesgos
               </a>
             </li>
             <li>
               <a routerLink="/app/deliverable-tracker" 
                  class="block py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors font-semibold"
                  title="Deliverable Tracker Avanzado - Solución IMEVI">
-                📋 Entregables
+                Entregables
+              </a>
+            </li>
+            <li>
+              <a routerLink="/app/budget" 
+                 class="block py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors font-semibold"
+                 title="Gestión Financiera - Solución IMEVI">
+                Presupuesto
               </a>
             </li>
             <li>
@@ -221,10 +228,10 @@
         </button>
       </div>
       <div class="py-3 px-4 flex items-center space-x-4">
-        <img class="w-10 h-10 rounded-full" [src]="user?.avatar" alt="" />
-        <div class="space-y-1">
-          <div>{{ user?.name }}</div>
-          <div class="text-sm text-gray-500">{{ user?.email }}</div>
+        <img class="w-10 h-10 rounded-full flex-shrink-0" [src]="user?.avatar" alt="" />
+        <div class="space-y-1 min-w-0 flex-1">
+          <div class="truncate font-medium text-gray-900">{{ user?.name }}</div>
+          <div class="text-sm text-gray-500 truncate" title="{{ user?.email }}">{{ user?.email }}</div>
         </div>
       </div>
       <ul class="py-1">

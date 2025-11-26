@@ -1,6 +1,7 @@
 import fs from 'fs';
 import pool from '../config/database.js';
 import DeliverableService from '../services/deliverable.service.js';
+import CardService from '../services/card.service.js';
 
 export const linkBoardToDeliverable = async (req, res) => {
   try {
@@ -45,6 +46,33 @@ export const createDeliverable = async (req, res) => {
       'INSERT INTO deliverables (project_id, title, description, due_date, type, evidence_link, status, progress) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [projectId, title, description, dueDate, type || 'document', evidenceLink, 'pending', 0]
     );
+
+    // --- AUTO-CREATE KANBAN CARD ---
+    try {
+        // 1. Get the first list of the board (usually 'To Do' or 'Pendiente')
+        const [lists] = await pool.query('SELECT id FROM lists WHERE board_id = ? ORDER BY position ASC LIMIT 1', [projectId]);
+        
+        if (lists.length > 0) {
+            const listId = lists[0].id;
+            
+            // 2. Calculate position (bottom of list)
+            const [posRows] = await pool.query('SELECT MAX(position) as maxPos FROM cards WHERE list_id = ?', [listId]);
+            const newPos = (posRows[0].maxPos || 0) + 65535;
+
+            // 3. Create Card
+            await CardService.createCard({
+                title: `[Entregable] ${title}`,
+                listId: listId,
+                position: newPos,
+                description: description, 
+                dueDate: dueDate
+            });
+            console.log('Carta Kanban creada automáticamente para el entregable');
+        }
+    } catch (cardError) {
+        console.error('Error al crear carta automática:', cardError);
+    }
+    // -------------------------------
 
     const [newDeliverable] = await pool.query('SELECT * FROM deliverables WHERE id = ?', [result.insertId]);
     res.status(201).json(newDeliverable[0]);
@@ -111,5 +139,61 @@ export const deleteDeliverable = async (req, res) => {
   } catch (error) {
     console.error('Error eliminando entregable:', error);
     res.status(500).json({ message: 'Error al eliminar entregable' });
+  }
+};
+
+export const createTaskFromDeliverable = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Get Deliverable
+    const [rows] = await pool.query('SELECT * FROM deliverables WHERE id = ?', [id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'Entregable no encontrado' });
+    const deliverable = rows[0];
+
+    // 2. Get Lists
+    const boardId = deliverable.project_id;
+    const [lists] = await pool.query('SELECT id, title FROM lists WHERE board_id = ?', [boardId]);
+
+    // 3. Map Status to List Title
+    let targetListTitle = '';
+    if (deliverable.status === 'pending') targetListTitle = 'Pendiente';
+    else if (deliverable.status === 'in_progress') targetListTitle = 'En Progreso';
+    else if (deliverable.status === 'completed') targetListTitle = 'Completado';
+    
+    // 4. Find List
+    let targetList = lists.find(l => l.title.toLowerCase() === targetListTitle.toLowerCase());
+
+    // 5. If not found, use or create 'Sin Lista'
+    if (!targetList) {
+        let sinLista = lists.find(l => l.title === 'Sin Lista');
+        if (!sinLista) {
+            // Create 'Sin Lista'
+            const [maxPos] = await pool.query('SELECT MAX(position) as maxPos FROM lists WHERE board_id = ?', [boardId]);
+            const newPos = (maxPos[0].maxPos || 0) + 1000;
+            const [newList] = await pool.query('INSERT INTO lists (board_id, title, position) VALUES (?, ?, ?)', [boardId, 'Sin Lista', newPos]);
+            targetList = { id: newList.insertId };
+        } else {
+            targetList = sinLista;
+        }
+    }
+
+    // 6. Create Card
+    const [posRows] = await pool.query('SELECT MAX(position) as maxPos FROM cards WHERE list_id = ?', [targetList.id]);
+    const newCardPos = (posRows[0].maxPos || 0) + 65535;
+
+    await CardService.createCard({
+        title: `[Entregable] ${deliverable.title}`,
+        listId: targetList.id,
+        position: newCardPos,
+        description: deliverable.description,
+        dueDate: deliverable.due_date
+    });
+
+    res.json({ message: 'Tarea creada exitosamente en el tablero', listName: targetListTitle || 'Sin Lista' });
+
+  } catch (error) {
+    console.error('Error al crear tarea desde entregable:', error);
+    res.status(500).json({ message: 'Error al crear tarea' });
   }
 };

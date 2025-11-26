@@ -29,7 +29,7 @@
         <button (click)="createProject()" class="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 shadow-sm hover:shadow transition-all">
           ➕ Nuevo Proyecto
         </button>
-        <button (click)="openReportModal()" class="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50">
+        <button *ngIf="selectedProject?.userRole !== 'viewer'" (click)="openReportModal()" class="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50">
           📋 Generar Reporte Semanal
         </button>
         
@@ -175,6 +175,39 @@
         </div>
       </div>
 
+      <!-- Resumen Presupuestal -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6" *ngIf="budgetSummary">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold dark:text-white">💵 Resumen Presupuestal</h3>
+            <button [routerLink]="['/app/budget', selectedProject.id]" class="text-sm text-blue-600 hover:underline">Ver Detalle</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Aprobado</div>
+                <div class="text-xl font-bold text-gray-900 dark:text-white">{{ budgetSummary.totalApproved | currency:'USD':'symbol':'1.0-0' }}</div>
+            </div>
+            <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Ejecutado</div>
+                <div class="text-xl font-bold text-blue-600">{{ budgetSummary.totalExecuted | currency:'USD':'symbol':'1.0-0' }}</div>
+            </div>
+            <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Disponible</div>
+                <div class="text-xl font-bold" [class.text-green-600]="budgetSummary.remaining >= 0" [class.text-red-600]="budgetSummary.remaining < 0">
+                    {{ budgetSummary.remaining | currency:'USD':'symbol':'1.0-0' }}
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">% Ejecución</div>
+                <div class="flex items-center gap-2">
+                    <div class="text-xl font-bold text-purple-600">{{ budgetSummary.executionPercentage | number:'1.0-1' }}%</div>
+                    <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div class="h-full bg-purple-600" [style.width.%]="budgetSummary.executionPercentage"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+
       <!-- Métricas Principales -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <!-- Progreso General -->
@@ -308,7 +341,7 @@
         </div>
       </div>
 
-      <button (click)="openReportModal()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 mb-6">
+      <button *ngIf="selectedProject?.userRole !== 'viewer'" (click)="openReportModal()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 mb-6">
         📋 Crear Reporte Semanal
       </button>
 

@@ -55,6 +55,10 @@ export class DeliverableTrackerComponent implements OnInit {
   }
 
   openModal(item?: Deliverable) {
+    if (!item && this.selectedProject?.userRole === 'viewer') {
+        return;
+    }
+
     if (item) {
        this.newItem = { ...item };
     } else {
@@ -128,6 +132,25 @@ export class DeliverableTrackerComponent implements OnInit {
       if (!item.id) return;
       item.status = newStatus;
       this.deliverableService.update(item.id, { status: newStatus }).subscribe();
+  }
+
+  createKanbanTask(deliverable: Deliverable) {
+    if (!deliverable.id) return;
+    if (this.selectedProject?.userRole === 'viewer') {
+         alert('No tienes permisos para crear tareas.');
+         return;
+    }
+    if (!confirm('¿Crear una tarea en el tablero Kanban para este entregable?')) return;
+    
+    this.deliverableService.createTask(deliverable.id).subscribe({
+        next: (res) => {
+            alert(`Tarea creada en la lista: ${res.listName}`);
+        },
+        error: (err) => {
+            console.error(err);
+            alert('Error al crear la tarea');
+        }
+    });
   }
 
   isOverdue(d: Deliverable): boolean {

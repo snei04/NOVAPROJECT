@@ -59,6 +59,10 @@ export class DeliverableService {
     return this.http.post<Deliverable>(this.apiUrl, data);
   }
 
+  createTask(id: number | string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/create-task`, {});
+  }
+
   update(id: number | string, data: Partial<Deliverable>): Observable<Deliverable> {
     return this.http.put<Deliverable>(`${this.apiUrl}/${id}`, data);
   }

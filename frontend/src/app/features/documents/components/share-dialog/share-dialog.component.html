@@ -40,7 +40,7 @@
             >
               <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-sm overflow-hidden">
                 <img *ngIf="user.avatar" [src]="user.avatar" class="w-full h-full object-cover">
-                <span *ngIf="!user.avatar">{{ user.name?.charAt(0) | uppercase }}</span>
+                <span *ngIf="!user.avatar">{{ user.name.charAt(0) | uppercase }}</span>
               </div>
               <div>
                 <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ user.name }}</div>

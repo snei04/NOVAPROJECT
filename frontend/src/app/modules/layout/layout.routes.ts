@@ -66,6 +66,18 @@ export const LAYOUT_ROUTES: Routes = [
       import('../../features/deliverable-tracker/deliverable-tracker.component').then(m => m.DeliverableTrackerComponent),
   },
   {
+    path: 'budget',
+    canActivate: [ AuthGuard ],
+    loadComponent: () => 
+      import('../../features/budget/components/budget-dashboard/budget-dashboard.component').then(m => m.BudgetDashboardComponent),
+  },
+  {
+    path: 'budget/:boardId',
+    canActivate: [ AuthGuard ],
+    loadComponent: () => 
+      import('../../features/budget/components/budget-dashboard/budget-dashboard.component').then(m => m.BudgetDashboardComponent),
+  },
+  {
     path: 'documents',
     canActivate: [ AuthGuard ],
     loadChildren: () => 

@@ -42,7 +42,7 @@ export class StakeholderService {
   }
 
   // Invitar stakeholder
-  inviteStakeholder(id: string, email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${id}/invite`, { email }, { context: checkToken() });
+  inviteStakeholder(id: string, email: string, role: 'editor' | 'viewer' = 'viewer'): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/invite`, { email, role }, { context: checkToken() });
   }
 }

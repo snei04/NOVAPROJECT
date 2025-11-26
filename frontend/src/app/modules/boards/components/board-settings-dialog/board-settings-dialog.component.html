@@ -35,6 +35,15 @@
         [class.text-gray-500]="activeTab !== 'finance'">
         Finanzas
       </button>
+      <button 
+        (click)="activeTab = 'milestones'"
+        class="flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors"
+        [class.border-blue-600]="activeTab === 'milestones'"
+        [class.text-blue-600]="activeTab === 'milestones'"
+        [class.border-transparent]="activeTab !== 'milestones'"
+        [class.text-gray-500]="activeTab !== 'milestones'">
+        Fases
+      </button>
     </div>
 
     <!-- Content -->
@@ -44,11 +53,11 @@
       <div *ngIf="activeTab === 'general'" class="space-y-4">
         <div>
           <label class="block text-sm font-medium mb-1 dark:text-gray-300">Nombre del Tablero</label>
-          <input [(ngModel)]="board.title" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+          <input [(ngModel)]="board.title" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" [disabled]="!canEdit">
         </div>
         <div>
             <label class="block text-sm font-medium mb-1 dark:text-gray-300">Color de Fondo</label>
-            <select [(ngModel)]="board.backgroundColor" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <select [(ngModel)]="board.backgroundColor" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" [disabled]="!canEdit">
                 <option value="sky">Cielo</option>
                 <option value="yellow">Amarillo</option>
                 <option value="green">Verde</option>
@@ -63,20 +72,20 @@
       <div *ngIf="activeTab === 'governance'" class="space-y-4">
         <div>
           <label class="block text-sm font-medium mb-1 dark:text-gray-300">Objetivo General</label>
-          <textarea [(ngModel)]="board.generalObjective" rows="3" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+          <textarea [(ngModel)]="board.generalObjective" rows="3" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" [disabled]="!canEdit"></textarea>
         </div>
         <div>
           <label class="block text-sm font-medium mb-1 dark:text-gray-300">Definición del Alcance</label>
-          <textarea [(ngModel)]="board.scopeDefinition" rows="3" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+          <textarea [(ngModel)]="board.scopeDefinition" rows="3" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" [disabled]="!canEdit"></textarea>
         </div>
         <div>
           <label class="block text-sm font-medium mb-1 dark:text-gray-300">Objetivos Específicos</label>
           <div class="space-y-2">
               <div *ngFor="let obj of board.specificObjectives; let i = index" class="flex gap-2">
-                  <input [(ngModel)]="obj.content" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                  <button (click)="removeSpecificObjective(i)" class="text-red-500 hover:text-red-700 font-bold px-2">✕</button>
+                  <input [(ngModel)]="obj.content" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" [disabled]="!canEdit">
+                  <button (click)="removeSpecificObjective(i)" *ngIf="canEdit" class="text-red-500 hover:text-red-700 font-bold px-2">✕</button>
               </div>
-              <button (click)="addSpecificObjective()" class="text-sm text-blue-600 hover:text-blue-800">+ Añadir objetivo</button>
+              <button (click)="addSpecificObjective()" *ngIf="canEdit" class="text-sm text-blue-600 hover:text-blue-800">+ Añadir objetivo</button>
           </div>
         </div>
       </div>
@@ -85,16 +94,16 @@
       <div *ngIf="activeTab === 'finance'" class="space-y-6">
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-medium mb-1 dark:text-gray-300">Presupuesto Estimado</label>
-                <input [(ngModel)]="board.budgetEstimated" type="number" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <label class="block text-sm font-medium mb-1 dark:text-gray-300">Presupuesto Estimado (Calculado)</label>
+                <input [(ngModel)]="board.budgetEstimated" type="number" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white bg-gray-100 cursor-not-allowed" [disabled]="true">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 dark:text-gray-300">Costo Real (Actual)</label>
-                <input [(ngModel)]="board.budgetActual" type="number" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <input [(ngModel)]="board.budgetActual" type="number" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white bg-gray-100 cursor-not-allowed" [disabled]="true">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 dark:text-gray-300">Beneficio Proyectado</label>
-                <input [(ngModel)]="board.projectBenefit" type="number" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <input [(ngModel)]="board.projectBenefit" type="number" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" [disabled]="!canEdit">
             </div>
         </div>
 
@@ -116,12 +125,53 @@
         </div>
       </div>
 
+      <!-- Tab Milestones -->
+      <div *ngIf="activeTab === 'milestones'" class="space-y-6">
+        <div class="flex justify-between items-center">
+            <h3 class="text-md font-bold dark:text-white">Fases del Proyecto (Milestones)</h3>
+            <button (click)="addMilestone()" *ngIf="canEdit" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                + Añadir Fase
+            </button>
+        </div>
+        
+        <div class="space-y-4">
+            <div *ngFor="let m of milestones" class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg flex flex-col gap-3 border border-gray-200 dark:border-gray-600">
+                <div class="flex justify-between items-start">
+                    <input [(ngModel)]="m.title" (blur)="updateMilestone(m)" [disabled]="!canEdit" 
+                           class="font-bold bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none dark:text-white w-full"
+                           placeholder="Nombre de la fase">
+                    <button (click)="deleteMilestone(m.id!)" *ngIf="canEdit" class="text-red-500 hover:text-red-700 ml-2 p-1">🗑️</button>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Fecha Límite</label>
+                        <input [(ngModel)]="m.dueDate" (change)="updateMilestone(m)" type="date" [disabled]="!canEdit"
+                               class="w-full p-1 bg-white dark:bg-gray-600 border rounded dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Estado</label>
+                        <select [(ngModel)]="m.status" (change)="updateMilestone(m)" [disabled]="!canEdit"
+                                class="w-full p-1 bg-white dark:bg-gray-600 border rounded dark:text-white">
+                            <option value="pending">Pendiente</option>
+                            <option value="in_progress">En Progreso</option>
+                            <option value="completed">Completado</option>
+                            <option value="blocked">Bloqueado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="milestones.length === 0" class="text-center py-8 text-gray-500 italic bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                No hay fases definidas. Añade una para organizar tu presupuesto y entregables.
+            </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Footer -->
     <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-900">
       <button (click)="close()" class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400">Cancelar</button>
-      <button (click)="save()" [disabled]="isSaving" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+      <button (click)="save()" *ngIf="canEdit" [disabled]="isSaving" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
         {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
       </button>
     </div>

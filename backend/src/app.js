@@ -13,6 +13,7 @@ import stakeholdersRoutes from './routes/stakeholders.routes.js';
 import risksRoutes from './routes/risks.routes.js';
 import deliverablesRoutes from './routes/deliverables.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
+import budgetRoutes from './routes/budget.routes.js';
 import cors from 'cors';
 import './scheduler.js';
 import stakeholderRoutes from './routes/stakeholder.routes.js';
@@ -49,6 +50,7 @@ app.use('/api/stakeholders', stakeholdersRoutes);
 app.use('/api/risks', risksRoutes);
 app.use('/api/deliverables', deliverablesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/budget', budgetRoutes);
 
 // Health Check Endpoint
 app.get('/api/health', (req, res) => {
