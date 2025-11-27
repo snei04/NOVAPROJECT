@@ -1,7 +1,7 @@
 # 🚀 NovaProject v2.2.1 - Release Notes
 ## Optimización de Colaboración y Gestión de Propiedad
 
-**Fecha de Lanzamiento:** 24 de Noviembre, 2025
+**Fecha de Lanzamiento:** 27 de Noviembre, 2025
 **Versión:** v2.2.1
 
 ---
@@ -223,6 +223,52 @@ Optimización del flujo de trabajo para gestores de proyecto.
 ### 🛠️ Correcciones Técnicas
 *   **Frontend:** Ajuste de clases CSS (`truncate`, `min-w-0`) en el componente `Navbar` para manejo de desbordamiento de texto.
 *   **Backend:** Implementación del endpoint `createTaskFromDeliverable` para la lógica de sincronización automática.
+
+---
+
+# 🚀 NovaProject v2.2.4 - Release Notes
+## Mejoras en Experiencia de Usuario y Correcciones Críticas
+
+**Fecha de Lanzamiento:** 27 de Noviembre, 2025
+**Versión:** v2.2.4
+
+---
+
+### 📋 Resumen Ejecutivo
+Esta versión se enfoca en pulir la experiencia del usuario final (**UX/UI**) eliminando interrupciones nativas del navegador y mejorando el diseño de los diálogos de tareas. Además, se han resuelto problemas críticos en el flujo de **invitaciones por correo** y la **creación rápida de tableros**.
+
+---
+
+### ✨ Nuevas Funcionalidades y Mejoras
+
+#### 1. Experiencia de Usuario (UX/UI) Refinada
+*   **Diálogos Nativos Eliminados:** Se han reemplazado todas las alertas intrusivas del navegador (`alert`, `confirm`, `prompt`) por **Componentes Modales Integrados**.
+    *   Ahora, al renombrar o eliminar tableros y listas, el usuario interactúa con diálogos modernos que mantienen la coherencia visual de la aplicación.
+    *   Incluye validaciones y estados de carga visuales.
+*   **Rediseño del Diálogo de Tareas:**
+    *   **Layout Optimizado:** Se migró de un diseño flexible a un **Grid Layout** robusto. Esto asegura que la columna lateral (Miembros, Etiquetas, Acciones) mantenga su ancho fijo y no colapse ni desborde el contenido principal, independientemente del tamaño de la pantalla.
+    *   **Botones Responsivos:** Los botones de acción ("Guardar", "Completar") ahora se adaptan automáticamente (`flex-wrap`), evitando cortes en pantallas pequeñas.
+    *   **Legibilidad Mejorada:** Corrección de contraste en los menús desplegables de miembros, asegurando que los nombres sean legibles sobre el fondo blanco.
+
+#### 2. Creación de Tableros Flexible
+*   **Acceso Rápido Habilitado:** Se ha flexibilizado la validación en el backend para permitir la **Creación Rápida** de tableros desde la barra de navegación.
+*   Los campos de Gobernanza (Objetivos, Alcance) ahora son opcionales en la creación inicial, permitiendo a los usuarios empezar a trabajar de inmediato y definir los detalles estratégicos más tarde desde la configuración.
+
+#### 3. Correcciones en Invitaciones
+*   **Identidad del Remitente:** Se corrigió un error en las plantillas de correo donde el nombre del usuario que invita no se mostraba correctamente (`undefined`). Ahora, las invitaciones muestran claramente quién te está invitando a colaborar.
+
+#### 4. Correcciones en Fases (Milestones)
+*   **Manejo de Fechas:** Se solucionó un problema donde la fecha límite no se visualizaba correctamente al editar una fase debido a incompatibilidad de formato. Ahora las fechas se cargan y guardan con precisión.
+*   **Confirmación de Eliminación:** Se reemplazó la alerta nativa del navegador al eliminar una fase por el nuevo **ConfirmDialog**, mejorando la coherencia visual y evitando interrupciones bruscas.
+
+---
+
+### 🛠️ Detalles Técnicos
+*   **Backend (`BoardController`):** Ajuste en la validación de `createBoard` para hacer opcionales los campos `generalObjective`, `scopeDefinition`, etc.
+*   **Frontend Componentes:**
+    *   Creación de `InputDialogComponent` y `ConfirmDialogComponent`.
+    *   Refactorización CSS en `TodoDialogComponent` usando CSS Grid (`grid-cols-[1fr_200px]`).
+    *   Mejora en `BoardSettingsDialogComponent` para formateo de fechas y uso de `ConfirmDialog`.
 
 ---
 

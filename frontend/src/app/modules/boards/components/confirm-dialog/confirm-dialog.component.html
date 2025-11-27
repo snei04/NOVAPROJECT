@@ -1,0 +1,26 @@
+<div class="w-96 bg-white rounded-lg shadow-xl overflow-hidden relative">
+  <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+      @if (data.color === 'danger') {
+        <fa-icon [icon]="faTriangleExclamation" class="text-red-500"></fa-icon>
+      }
+      {{ data.title }}
+    </h3>
+    <button (click)="close()" class="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">
+      <fa-icon [icon]="faClose"></fa-icon>
+    </button>
+  </div>
+  
+  <div class="p-6">
+    <p class="text-sm text-gray-600">{{ data.message }}</p>
+  </div>
+
+  <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+    <app-btn typeBtn="button" color="light" (click)="close()">
+      {{ data.cancelText || 'Cancelar' }}
+    </app-btn>
+    <app-btn typeBtn="button" [color]="data.color || 'primary'" (click)="confirm()">
+      {{ data.confirmText || 'Confirmar' }}
+    </app-btn>
+  </div>
+</div>

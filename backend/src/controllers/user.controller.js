@@ -34,5 +34,3 @@ export const searchUsers = async (req, res) => {
     res.status(500).json({ message: 'Error searching users' });
   }
 };
-
-// Aquí añadiremos más funciones (crear, actualizar, etc.) en el futuro

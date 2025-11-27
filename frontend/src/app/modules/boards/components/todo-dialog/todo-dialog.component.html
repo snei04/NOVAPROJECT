@@ -1,16 +1,16 @@
 <div class="p-6 bg-gray-100 relative rounded shadow">
-  <button (click)="close()" type="button" class="absolute top-3 right-3 focus:outline-none p-2">
+  <button (click)="close()" type="button" class="absolute top-3 right-3 focus:outline-none p-2 text-black">
     <fa-icon [icon]="faClose"></fa-icon>
   </button>
-  <div class="flex space-x-2 mb-5">
+  <div class="flex space-x-2 mb-5 pr-10">
     <fa-icon class="text-gray-800" [icon]="faCheckToSlot"></fa-icon>
     <div class="flex flex-col">
       <h3 class="text-lg font-semibold text-gray-800">{{ card.title }}</h3>
       <p class="text-sm text-gray-500">en la lista de tareas pendientes</p>
     </div>
   </div>
-  <div class="flex w-full gap-4">
-    <div class="flex space-x-2 mb-5 w-4/6">
+  <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-6">
+    <div class="flex space-x-2 mb-5">
       <fa-icon class="text-gray-800 mt-1" [icon]="faBars"></fa-icon>
       <div class="flex flex-col w-full">
         <h3 class="text-lg font-semibold text-gray-800">Descripción</h3>
@@ -18,7 +18,7 @@
         @if (isEditingDescription) {
           <div>
             <textarea [formControl]="descriptionInput" rows="3" class="w-full bg-white border-gray-300 border-2 rounded p-2 text-black"></textarea>
-            <div class="flex space-x-2 mt-2">
+            <div class="flex flex-wrap gap-2 mt-2">
               <app-btn color="success" (click)="saveDescription()">Guardar Cambios</app-btn>
               <app-btn color="primary" (click)="saveAndComplete()">Guardar y Completar</app-btn>
               <app-btn typeBtn="button" color="light" (click)="isEditingDescription = false">
@@ -39,7 +39,7 @@
         }
       </div>
     </div>
-    <div class="flex flex-auto space-y-2 flex-col">
+    <div class="flex flex-col space-y-2">
       <div>
         <h4 class="text-sm font-semibold mb-1 text-gray-800">Fecha Vencimiento</h4>
         <input 
@@ -87,7 +87,7 @@
   [cdkConnectedOverlayOrigin]="membersOverlay"
   [cdkConnectedOverlayOpen]="isOpenMembers"
   (overlayOutsideClick)="isOpenMembers = false">
-  <div class="z-50 my-2 w-60 bg-white rounded shadow-lg p-4">
+  <div class="z-50 my-2 w-60 bg-white rounded shadow-lg p-4 text-gray-800">
     <h3 class="text-center font-semibold mb-2">Miembros del Tablero</h3>
     <ul class="space-y-2">
       @for (member of boardMembers; track member.id) {

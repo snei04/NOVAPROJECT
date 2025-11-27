@@ -1,6 +1,6 @@
 // src/controllers/board.controller.js
 import pool from '../config/database.js';
-import BoardService from '../services/board.service.js'; // <-- 1. Importa el servicio
+import BoardService from '../services/board.service.js';
 import { sendMail } from '../services/mail.service.js';
 
 export const createBoard = async (req, res) => {
@@ -14,11 +14,14 @@ export const createBoard = async (req, res) => {
     }
 
     // Validación de campos de gobernanza (Mejora 4)
+    // Hacemos estos campos opcionales para permitir la creación rápida de tableros desde el navbar
+    /*
     if (!generalObjective || !scopeDefinition || !specificObjectives) {
         return res.status(400).json({ 
             message: 'Los campos de gobernanza (Objetivo General, Alcance, Objetivos Específicos) son obligatorios.' 
         });
     }
+    */
 
     // 2. El controlador ahora solo llama al servicio
     const newBoard = await BoardService.createBoard({ 
@@ -165,7 +168,7 @@ export const addMember = async (req, res) => {
       const emailHtml = `
         <h1>¡Has sido invitado a colaborar en NovaProject!</h1>
         <p>Hola,</p>
-        <p>El usuario <b>${owner.nombre}</b> te ha invitado a colaborar en el tablero "<b>${boardTitle}</b>".</p>
+        <p>El usuario <b>${owner.name}</b> te ha invitado a colaborar en el tablero "<b>${boardTitle}</b>".</p>
         <p>Aún no tienes una cuenta. Regístrate para acceder:</p>
         <a href="${registerLink}" style="padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Registrarse</a>
       `;
@@ -211,7 +214,7 @@ export const addMember = async (req, res) => {
     const emailHtml = `
       <h1>¡Has sido invitado a un tablero!</h1>
       <p>Hola ${userToInviteName},</p>
-      <p>El usuario <b>${owner.nombre}</b> te ha invitado a colaborar en el tablero "<b>${boardTitle}</b>" en Novaproject.</p>
+      <p>El usuario <b>${owner.name}</b> te ha invitado a colaborar en el tablero "<b>${boardTitle}</b>" en Novaproject.</p>
       <a href="${inviteLink}" style="padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Ver el tablero</a>
     `;
     await sendMail(email, `Invitación para colaborar en "${boardTitle}"`, emailHtml);

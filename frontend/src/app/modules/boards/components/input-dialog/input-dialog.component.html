@@ -1,0 +1,31 @@
+<div class="w-96 bg-white rounded-lg shadow-xl overflow-hidden relative">
+  <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+    <h3 class="text-lg font-semibold text-gray-800">{{ data.title }}</h3>
+    <button (click)="close()" class="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">
+      <fa-icon [icon]="faClose"></fa-icon>
+    </button>
+  </div>
+  
+  <div class="p-6">
+    @if (data.message) {
+      <p class="text-sm text-gray-600 mb-4">{{ data.message }}</p>
+    }
+    
+    <input 
+      [formControl]="input" 
+      [placeholder]="data.placeholder || ''"
+      (keydown.enter)="confirm()"
+      class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all text-gray-700"
+      autofocus
+    >
+  </div>
+
+  <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+    <app-btn typeBtn="button" color="light" (click)="close()">
+      {{ data.cancelText || 'Cancelar' }}
+    </app-btn>
+    <app-btn typeBtn="button" color="primary" (click)="confirm()" [disabled]="input.invalid">
+      {{ data.confirmText || 'Aceptar' }}
+    </app-btn>
+  </div>
+</div>

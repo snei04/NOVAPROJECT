@@ -1,10 +1,11 @@
 import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
+import { DIALOG_DATA, DialogRef, Dialog } from '@angular/cdk/dialog';
 import { Board } from '@models/board.model';
 import { BoardsService } from '@services/boards.service';
 import { MilestoneService, Milestone } from '@services/milestone.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-board-settings-dialog',
@@ -20,6 +21,7 @@ export class BoardSettingsDialogComponent {
 
   constructor(
     private dialogRef: DialogRef<boolean>,
+    private dialog: Dialog,
     @Inject(DIALOG_DATA) public data: { board: Board },
     private boardsService: BoardsService,
     private milestoneService: MilestoneService
@@ -33,7 +35,18 @@ export class BoardSettingsDialogComponent {
   }
 
   loadMilestones() {
-      this.milestoneService.getMilestonesByProject(this.board.id).subscribe(ms => this.milestones = ms);
+      this.milestoneService.getMilestonesByProject(this.board.id).subscribe(ms => {
+          this.milestones = ms.map(m => ({
+              ...m,
+              targetDate: this.formatDate(m.targetDate)
+          }));
+      });
+  }
+
+  formatDate(date: Date | string): string {
+      if (!date) return '';
+      const d = new Date(date);
+      return d.toISOString().split('T')[0];
   }
 
   get canEdit(): boolean {
@@ -86,7 +99,7 @@ export class BoardSettingsDialogComponent {
       const newMilestone: Milestone = {
           projectId: this.board.id,
           title: 'Nueva Fase',
-          dueDate: new Date().toISOString(),
+          targetDate: new Date().toISOString().substring(0, 10),
           status: 'pending',
           priority: 'medium'
       };
@@ -96,11 +109,22 @@ export class BoardSettingsDialogComponent {
   }
 
   deleteMilestone(id: string) {
-      if(confirm('¿Eliminar esta fase?')) {
+    this.dialog.open(ConfirmDialogComponent, {
+      minWidth: '300px',
+      data: {
+        title: '¿Eliminar fase?',
+        message: 'Esta acción no se puede deshacer.',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        color: 'danger'
+      }
+    }).closed.subscribe(result => {
+      if (result) {
         this.milestoneService.deleteMilestone(id).subscribe(() => {
-            this.milestones = this.milestones.filter(m => m.id !== id);
+          this.milestones = this.milestones.filter(m => m.id !== id);
         });
       }
+    });
   }
   
   updateMilestone(milestone: Milestone) {

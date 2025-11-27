@@ -171,7 +171,7 @@ export class CreateProjectWizardComponent {
           this.milestoneService.createMilestone({
             projectId: boardId,
             title: m.title,
-            dueDate: new Date(m.dueDate),
+            targetDate: new Date(m.dueDate).toISOString().substring(0, 10),
             description: m.description,
             status: 'pending',
             priority: 'high'

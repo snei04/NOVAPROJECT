@@ -124,8 +124,17 @@ export const updateMilestone = async (req, res) => {
       values.push(description);
     }
     if (targetDate !== undefined) {
-      updates.push('target_date = ?');
-      values.push(targetDate);
+        // Validate date if it's provided
+        if (targetDate === '' || targetDate === null) {
+             // Depending on DB schema, this might need to be handled. 
+             // If target_date is NOT NULL, we shouldn't allow clearing it unless we have a default.
+             // For now, let's assume we want to update it if it's a valid string.
+             updates.push('target_date = ?');
+             values.push(null); // Or handle as needed
+        } else {
+             updates.push('target_date = ?');
+             values.push(targetDate);
+        }
     }
     if (status !== undefined) {
       updates.push('status = ?');

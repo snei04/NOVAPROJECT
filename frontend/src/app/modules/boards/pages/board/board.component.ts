@@ -20,6 +20,8 @@ import { Activity } from '@models/activity.model';
 import { BACKGROUNDS } from '@models/colors.model';
 import { AssociateDialogComponent } from '@boards/components/associate-dialog/associate-dialog.component';
 import { BoardSettingsDialogComponent } from '@boards/components/board-settings-dialog/board-settings-dialog.component';
+import { InputDialogComponent } from '@boards/components/input-dialog/input-dialog.component';
+import { ConfirmDialogComponent } from '@boards/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-board',
@@ -211,53 +213,97 @@ openAssociateDialog() {
     list.showCardForm = false;
   }
 
- renameBoard(board: Board) {
-    const newTitle = prompt('Nuevo nombre del tablero:', board.title);
-    if (newTitle && newTitle !== board.title) {
-      this.boardsService.update(board.id, { title: newTitle })
-        .subscribe(() => {
-          if (this.board) {
-            this.board.title = newTitle;
-          }
-          this.toastr.success('Tablero renombrado');
-        });
-    }
+  renameBoard(board: Board) {
+    const dialogRef = this.dialog.open(InputDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Renombrar Tablero',
+        initialValue: board.title,
+        placeholder: 'Nuevo nombre'
+      }
+    });
+
+    dialogRef.closed.subscribe((newTitle: any) => {
+      if (newTitle && newTitle !== board.title) {
+        this.boardsService.update(board.id, { title: newTitle })
+          .subscribe(() => {
+            if (this.board) {
+              this.board.title = newTitle;
+            }
+            this.toastr.success('Tablero renombrado');
+          });
+      }
+    });
   }
 
   deleteBoard(board: Board) {
-    if (confirm(`¿Estás seguro de eliminar el tablero "${board.title}"? Esta acción no se puede deshacer.`)) {
-      this.boardsService.delete(board.id)
-        .subscribe(() => {
-          this.toastr.success('Tablero eliminado');
-          this.router.navigate(['/app/boards']);
-        });
-    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Eliminar Tablero',
+        message: `¿Estás seguro de eliminar el tablero "${board.title}"? Esta acción no se puede deshacer.`,
+        color: 'danger',
+        confirmText: 'Eliminar'
+      }
+    });
+
+    dialogRef.closed.subscribe((result) => {
+      if (result) {
+        this.boardsService.delete(board.id)
+          .subscribe(() => {
+            this.toastr.success('Tablero eliminado');
+            this.router.navigate(['/app/boards']);
+          });
+      }
+    });
   }
 
   renameList(list: List) {
-    const newTitle = prompt('Nuevo nombre de la lista:', list.title);
-    if (newTitle && newTitle !== list.title) {
-      this.listsService.update(list.id, { title: newTitle })
-        .subscribe(() => {
-          list.title = newTitle;
-          this.toastr.success('Lista renombrada');
-        });
-    }
+    const dialogRef = this.dialog.open(InputDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Renombrar Lista',
+        initialValue: list.title,
+        placeholder: 'Nuevo nombre'
+      }
+    });
+
+    dialogRef.closed.subscribe((newTitle: any) => {
+      if (newTitle && newTitle !== list.title) {
+        this.listsService.update(list.id, { title: newTitle })
+          .subscribe(() => {
+            list.title = newTitle;
+            this.toastr.success('Lista renombrada');
+          });
+      }
+    });
   }
 
   deleteList(list: List) {
-    if (confirm(`¿Estás seguro de eliminar la lista "${list.title}"?`)) {
-      this.listsService.delete(list.id)
-        .subscribe(() => {
-          if (this.board) {
-            const listIndex = this.board.lists.findIndex(item => item.id === list.id);
-            if (listIndex !== -1) {
-              this.board.lists.splice(listIndex, 1);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Eliminar Lista',
+        message: `¿Estás seguro de eliminar la lista "${list.title}"?`,
+        color: 'danger',
+        confirmText: 'Eliminar'
+      }
+    });
+
+    dialogRef.closed.subscribe((result) => {
+      if (result) {
+        this.listsService.delete(list.id)
+          .subscribe(() => {
+            if (this.board) {
+              const listIndex = this.board.lists.findIndex(item => item.id === list.id);
+              if (listIndex !== -1) {
+                this.board.lists.splice(listIndex, 1);
+              }
             }
-          }
-          this.toastr.success('Lista eliminada');
-        });
-    }
+            this.toastr.success('Lista eliminada');
+          });
+      }
+    });
   }
 
   get colors() {
