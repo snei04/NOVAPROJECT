@@ -160,23 +160,59 @@ export class DashboardComponent implements OnInit {
   exportToExcel() {
     if (!this.dashboardData || !this.selectedProject) return;
     
-    // Preparar datos para CSV
-    const headers = ['Metrica', 'Valor', 'Detalle', 'Tendencia'];
-    const rows = [
+    // Helper para escapar campos CSV
+    const escape = (field: any) => {
+      if (field === null || field === undefined) return '""';
+      const stringField = String(field);
+      // Si contiene comillas, comas o saltos de línea, envolver en comillas y duplicar comillas internas
+      if (stringField.includes('"') || stringField.includes(',') || stringField.includes('\n')) {
+        return `"${stringField.replace(/"/g, '""')}"`;
+      }
+      return stringField;
+    };
+
+    // 1. Métricas Generales
+    const headers = ['Metrica', 'Valor', 'Detalle', 'Tendencia'].map(escape);
+    const metricsRows = [
       ['Progreso General', `${this.dashboardData.progress.percent}%`, 'Del total del proyecto', this.progressTrend],
       ['Entregables', `${this.dashboardData.progress.deliverables.completed}/${this.dashboardData.progress.deliverables.total}`, 'Completados', 'Estable'],
       ['Riesgos Criticos', this.dashboardData.alerts.criticalRisks, 'Requieren atencion', '-'],
       ['Reportes Semanales', this.dashboardData.weeklyReports.total, 'Enviados', 'Mejorando']
     ];
 
-    let csvContent = "data:text/csv;charset=utf-8," 
-        + headers.join(",") + "\n" 
-        + rows.map(e => e.join(",")).join("\n");
+    let csvContent = headers.join(",") + "\n" 
+        + metricsRows.map(row => row.map(escape).join(",")).join("\n");
 
-    const encodedUri = encodeURI(csvContent);
+    // 2. Separador
+    csvContent += "\n\n";
+
+    // 3. Bitácora / Detalle del Informe (Reportes Semanales)
+    const bitacoraHeader = ['BITACORA DE SEGUIMIENTO', 'Detalle de anotaciones semanales'].map(escape);
+    csvContent += bitacoraHeader.join(",") + "\n";
+    
+    const reportsHeaders = ['Semana', 'Logros / Avances', 'Desafios / Bloqueos', 'Proximos Pasos (Metas)', 'Fecha de Reporte'].map(escape);
+    csvContent += reportsHeaders.join(",") + "\n";
+
+    const history = this.dashboardData.weeklyReports.history || [];
+    // Ordenar por semana descendente
+    history.sort((a: any, b: any) => b.week_number - a.week_number);
+
+    const reportRows = history.map((report: any) => [
+      `Semana ${report.week_number}`,
+      report.achievements || '-',
+      report.challenges || '-',
+      report.goals_next_week || '-',
+      report.created_at ? new Date(report.created_at).toLocaleDateString() : '-'
+    ]);
+
+    csvContent += reportRows.map(row => row.map(escape).join(",")).join("\n");
+
+    // Descargar archivo
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `reporte_dashboard_${this.selectedProject.title}.csv`);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `reporte_mensual_bitacora_${this.selectedProject.title}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

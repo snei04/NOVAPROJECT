@@ -5,6 +5,7 @@ import { BoardsService } from '../../../../services/boards.service';
 import { StakeholderService, Stakeholder } from '../../../../services/stakeholder.service';
 import { MeetingService, Meeting, ActionItem } from '../../services/meeting.service';
 import { Board } from '../../../../models/board.model';
+import { List } from '../../../../models/list.model';
 import { forkJoin } from 'rxjs';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions } from '@fullcalendar/core';
@@ -28,6 +29,7 @@ export class StakeholderDashboardComponent implements OnInit {
 
   projects: Board[] = [];
   selectedProject: Board | null = null;
+  lists: List[] = []; // Listas del tablero para crear tarjetas
 
   stakeholders: Stakeholder[] = [];
   meetings: Meeting[] = [];
@@ -97,11 +99,13 @@ export class StakeholderDashboardComponent implements OnInit {
 
     forkJoin({
       stakeholders: this.stakeholderService.getStakeholdersByProject(project.id),
-      meetings: this.meetingService.getMeetingsByProject(project.id)
+      meetings: this.meetingService.getMeetingsByProject(project.id),
+      board: this.boardsService.getBoard(project.id)
     }).subscribe({
       next: (data) => {
         this.stakeholders = data.stakeholders;
         this.meetings = data.meetings;
+        this.lists = data.board.lists;
         
         // Extraer compromisos de las reuniones cargadas
         this.commitments = this.meetings.flatMap(m => m.actionItems || []);
@@ -179,6 +183,9 @@ export class StakeholderDashboardComponent implements OnInit {
         this.updateCalendarEvents(); // Refrescar calendario
         this.reminderService.trackMeetings(this.meetings); // Refrescar recordatorios
 
+        // Auto-create card
+        this.createCardForEntity(`Reunión: ${meeting.title}`, `Programada para: ${new Date(meeting.startTime).toLocaleString()}`);
+
         this.isCreatingMeeting = false;
         this.closeMeetingModal();
       },
@@ -220,6 +227,10 @@ export class StakeholderDashboardComponent implements OnInit {
     this.meetingService.createActionItem(this.newCommitment).subscribe({
       next: (item) => {
         this.commitments.push(item);
+        
+        // Auto-create card
+        this.createCardForEntity(`Compromiso: ${item.description}`, `Vence: ${item.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'Sin fecha'}`);
+
         this.isCreatingCommitment = false;
         this.closeCommitmentModal();
       },
@@ -228,6 +239,47 @@ export class StakeholderDashboardComponent implements OnInit {
         this.isCreatingCommitment = false;
         alert('Error al crear el compromiso');
       }
+    });
+  }
+
+  toggleCommitmentStatus(commitment: ActionItem) {
+    // Si ya está completado, lo volvemos pendiente. Si no, completado.
+    // O si está 'in_progress', al darle check pasa a completed.
+    const newStatus = commitment.status === 'completed' ? 'pending' : 'completed';
+    const originalStatus = commitment.status; 
+
+    // Optimistic update
+    commitment.status = newStatus;
+
+    this.meetingService.updateActionItemStatus(commitment.id, newStatus).subscribe({
+      next: () => {
+        // Success
+      },
+      error: (err) => {
+        console.error('Error updating commitment status', err);
+        // Revert on error
+        commitment.status = originalStatus;
+        alert('Error al actualizar el estado del compromiso');
+      }
+    });
+  }
+
+  private createCardForEntity(title: string, description: string) {
+    if (this.lists.length === 0 || !this.selectedProject) return;
+
+    const list = this.lists[0];
+    const cards = list.cards || [];
+    const position = this.boardsService.getPositionNewItem(cards);
+
+    this.boardsService.createCard({
+      title,
+      description,
+      position,
+      listId: list.id,
+      boardId: this.selectedProject.id
+    }).subscribe({
+      next: (card) => console.log('Card created automatically', card),
+      error: (e) => console.error('Error creating auto-card', e)
     });
   }
 

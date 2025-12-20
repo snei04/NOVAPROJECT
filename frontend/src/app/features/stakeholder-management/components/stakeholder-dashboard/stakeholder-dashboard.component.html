@@ -127,15 +127,20 @@
 
       <div class="space-y-3">
         <div *ngFor="let c of commitments" class="flex items-start gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
-          <input type="checkbox" [checked]="c.status === 'completed'" class="mt-1 h-4 w-4 text-blue-600 rounded">
+          <input type="checkbox" [checked]="c.status === 'completed'" (change)="toggleCommitmentStatus(c)" class="mt-1 h-4 w-4 text-blue-600 rounded cursor-pointer">
           <div class="flex-1">
             <p class="text-sm" [class.line-through]="c.status === 'completed'" [class.text-gray-400]="c.status === 'completed'">
               {{ c.description }}
             </p>
             <div class="flex justify-between items-center mt-1">
               <span class="text-xs text-gray-500">Vence: {{ c.dueDate | date:'shortDate' }}</span>
-              <span class="text-xs px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
-                {{ c.status === 'in_progress' ? 'En curso' : c.status }}
+              <span class="text-xs px-1.5 py-0.5 rounded"
+                    [ngClass]="{
+                      'bg-green-100 text-green-800': c.status === 'completed',
+                      'bg-yellow-100 text-yellow-800': c.status === 'pending' || c.status === 'in_progress',
+                      'bg-gray-100 text-gray-600': !c.status
+                    }">
+                {{ c.status === 'completed' ? 'Completado' : (c.status === 'in_progress' ? 'En curso' : 'Pendiente') }}
               </span>
             </div>
           </div>
