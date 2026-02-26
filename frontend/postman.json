@@ -1,40 +1,36 @@
 {
 	"info": {
 		"_postman_id": "d4b622b2-0c54-4316-b1a7-5ec5b11f9de2",
-		"name": "Fake Trello API",
+		"name": "NovaProject API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "25495148"
+		"description": "Colección completa de endpoints para el backend de NovaProject"
 	},
 	"item": [
 		{
-			"name": "Auth",
+			"name": "Health",
 			"item": [
 				{
-					"name": "Login",
+					"name": "Health Check",
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"email\": \"nicolas@mail.com\",\r\n\t\"password\": \"changeme\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "{{url}}/auth/login",
+							"raw": "{{url}}/health",
 							"host": [
-								"{{url}}auth"
+								"{{url}}"
 							],
 							"path": [
-								"login"
+								"health"
 							]
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
 				{
 					"name": "Register",
 					"request": {
@@ -42,7 +38,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"email\": \"nicolas2@mail.com\",\r\n\t\"password\": \"changeme\",\r\n\t\"name\": \"Nicolas 2\"\r\n}",
+							"raw": "{\n\t\"email\": \"usuario@mail.com\",\n\t\"password\": \"changeme\",\n\t\"name\": \"Usuario Test\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -63,13 +59,54 @@
 					"response": []
 				},
 				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set('token', jsonData.token);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"usuario@mail.com\",\n\t\"password\": \"changeme\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/auth/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Is Available",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"email\": \"admin@admin.com\"\r\n}",
+							"raw": "{\n\t\"email\": \"usuario@mail.com\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -90,13 +127,40 @@
 					"response": []
 				},
 				{
-					"name": "Recovery",
+					"name": "Check User Exists",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"email\": \"admin@mail.com\"\r\n}",
+							"raw": "{\n\t\"email\": \"usuario@mail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/auth/check-user",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"check-user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Recovery (Forgot Password)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"usuario@mail.com\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -123,7 +187,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImlhdCI6MTY1ODM5ODE3NywiZXhwIjoxNjU4Mzk4NDc3fQ.cB88jGRgDn50vdupConyKKPilvXHh79yZ4OSvBYf7Wg\",\r\n\t\"newPassword\": \"nuevochange\"\r\n}",
+							"raw": "{\n\t\"token\": \"<RECOVERY_TOKEN>\",\n\t\"newPassword\": \"nuevaPassword123\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -132,15 +196,10 @@
 						},
 						"url": {
 							"raw": "{{url}}/auth/change-password",
-							"protocol": "https",
 							"host": [
-								"fake-trello-api",
-								"herokuapp",
-								"com"
+								"{{url}}"
 							],
 							"path": [
-								"api",
-								"v1",
 								"auth",
 								"change-password"
 							]
@@ -149,18 +208,27 @@
 					"response": []
 				},
 				{
-					"name": "Profile",
+					"name": "Refresh Token",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"refreshToken\": \"<REFRESH_TOKEN>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{url}}/auth/profile",
+							"raw": "{{url}}/auth/refresh-token",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"auth",
-								"profile"
+								"refresh-token"
 							]
 						}
 					},
@@ -172,8 +240,18 @@
 			"name": "Users",
 			"item": [
 				{
-					"name": "Get All",
+					"name": "Get All Users",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -189,17 +267,2270 @@
 					"response": []
 				},
 				{
-					"name": "Get One",
+					"name": "Search Users",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{url}}/users/1",
+							"raw": "{{url}}/users/search?q=nombre",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"users",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "nombre"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Me",
+			"item": [
+				{
+					"name": "Get My Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/me/profile",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"me",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update My Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Nuevo Nombre\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/me/profile",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"me",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Boards",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/me/boards",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"me",
+								"boards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Tasks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/me/tasks",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"me",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Boards",
+			"item": [
+				{
+					"name": "Create Board",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Mi Tablero\",\n\t\"background_color\": \"#3498db\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/boards",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"boards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Boards",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/boards",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"boards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Board By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/boards/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"boards",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Board",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Tablero Actualizado\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/boards/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"boards",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Board",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/boards/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"boards",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Board Dashboard",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/boards/1/dashboard",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"boards",
+								"1",
+								"dashboard"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Member to Board",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"userId\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/boards/1/members",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"boards",
+								"1",
+								"members"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Board Activity",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/boards/1/activity",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"boards",
+								"1",
+								"activity"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Board Labels",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/boards/1/labels",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"boards",
+								"1",
+								"labels"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Board Associations",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/boards/1/associations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"boards",
+								"1",
+								"associations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Board Association",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"projectId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/boards/1/associations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"boards",
+								"1",
+								"associations"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Lists",
+			"item": [
+				{
+					"name": "Create List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Nueva Lista\",\n\t\"boardId\": 1,\n\t\"position\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/lists",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"lists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Lista Actualizada\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/lists/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"lists",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/lists/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"lists",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cards",
+			"item": [
+				{
+					"name": "Create Card",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Nueva Tarjeta\",\n\t\"listId\": 1,\n\t\"position\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/cards",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"cards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Card",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Tarjeta Actualizada\",\n\t\"description\": \"Descripción updated\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/cards/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"cards",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Card",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/cards/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"cards",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Member to Card",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"cardId\": 1,\n\t\"userId\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/cards/assign-member",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"cards",
+								"assign-member"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Member from Card",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/cards/1/remove-member/2",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"cards",
+								"1",
+								"remove-member",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Labels",
+			"item": [
+				{
+					"name": "Create Label",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Bug\",\n\t\"color\": \"#e74c3c\",\n\t\"boardId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/labels",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"labels"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Label",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Feature\",\n\t\"color\": \"#2ecc71\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/labels/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"labels",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Label to Card",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"cardId\": 1,\n\t\"labelId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/labels/assign",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"labels",
+								"assign"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Label from Card",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/labels/assign/1/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"labels",
+								"assign",
+								"1",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Documents",
+			"item": [
+				{
+					"name": "Get All Documents",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/documents",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"documents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Document By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/documents/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"documents",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Child Documents",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/documents/children/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"documents",
+								"children",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Document",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Nuevo Documento\",\n\t\"content\": \"Contenido del documento\",\n\t\"parentId\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/documents",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"documents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invite Collaborator",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"userId\": 2,\n\t\"permission\": \"edit\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/documents/1/invite",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"documents",
+								"1",
+								"invite"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Document",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Documento Actualizado\",\n\t\"content\": \"Contenido actualizado\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/documents/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"documents",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Archive Document",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/documents/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"documents",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Milestones",
+			"item": [
+				{
+					"name": "Get Milestones by Project",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/milestones/project/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"milestones",
+								"project",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Project Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/milestones/metrics/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"milestones",
+								"metrics",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Milestone",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"projectId\": 1,\n\t\"name\": \"Fase 1 - Diseño\",\n\t\"description\": \"Fase de diseño del proyecto\",\n\t\"startDate\": \"2026-03-01\",\n\t\"endDate\": \"2026-03-31\",\n\t\"status\": \"pending\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/milestones",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"milestones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Milestone",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Fase 1 - Diseño (Actualizado)\",\n\t\"status\": \"in_progress\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/milestones/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"milestones",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Milestone",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/milestones/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"milestones",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stakeholders",
+			"item": [
+				{
+					"name": "Get All Stakeholders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stakeholders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Stakeholder",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Juan Pérez\",\n\t\"email\": \"juan@mail.com\",\n\t\"role\": \"Project Manager\",\n\t\"projectId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/stakeholders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stakeholders by Project",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stakeholders/project/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders",
+								"project",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invite Stakeholder",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"stakeholder@mail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/stakeholders/1/invite",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders",
+								"1",
+								"invite"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stakeholder Availability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stakeholders/1/availability",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders",
+								"1",
+								"availability"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Stakeholder Availability",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"day\": \"monday\",\n\t\"startTime\": \"09:00\",\n\t\"endTime\": \"12:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/stakeholders/1/availability",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders",
+								"1",
+								"availability"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Stakeholder Availability",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"day\": \"monday\",\n\t\"startTime\": \"10:00\",\n\t\"endTime\": \"13:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/stakeholders/1/availability",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders",
+								"1",
+								"availability"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Meetings by Project",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stakeholders/meetings/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders",
+								"meetings",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Meeting",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"projectId\": 1,\n\t\"title\": \"Reunión de Kickoff\",\n\t\"date\": \"2026-03-15\",\n\t\"startTime\": \"10:00\",\n\t\"endTime\": \"11:00\",\n\t\"attendees\": [1, 2]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/stakeholders/meetings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders",
+								"meetings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Meeting Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"status\": \"completed\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/stakeholders/meetings/1/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders",
+								"meetings",
+								"1",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Optimal Slots",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"duration\": 60,\n\t\"stakeholderIds\": [1, 2]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/stakeholders/find-slots/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders",
+								"find-slots",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Action Item",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Revisar documento\",\n\t\"stakeholderId\": 1,\n\t\"dueDate\": \"2026-03-20\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/stakeholders/action-items",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders",
+								"action-items"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Action Item Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"status\": \"completed\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/stakeholders/action-items/1/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stakeholders",
+								"action-items",
+								"1",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stakeholder (Board V1)",
+			"item": [
+				{
+					"name": "Get Stakeholders by Board",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/1/stakeholders",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"1",
+								"stakeholders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Interview",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"stakeholderId\": 1,\n\t\"notes\": \"Entrevista de requerimientos\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/1/interviews",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"1",
+								"interviews"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Risks",
+			"item": [
+				{
+					"name": "Get Risks by Project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/risks/project/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"risks",
+								"project",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Risk",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"projectId\": 1,\n\t\"name\": \"Retraso en entrega\",\n\t\"description\": \"Posible retraso por falta de recursos\",\n\t\"probability\": \"high\",\n\t\"impact\": \"critical\",\n\t\"mitigation\": \"Asignar recursos adicionales\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/risks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"risks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Risk",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"status\": \"mitigated\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/risks/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"risks",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Risk",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/risks/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"risks",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Deliverables",
+			"item": [
+				{
+					"name": "Get Deliverables by Project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deliverables/project/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"deliverables",
+								"project",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Deliverable",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"projectId\": 1,\n\t\"name\": \"Documento de Arquitectura\",\n\t\"description\": \"Documento técnico de arquitectura del sistema\",\n\t\"dueDate\": \"2026-04-01\",\n\t\"status\": \"pending\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/deliverables",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"deliverables"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Deliverable",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"status\": \"in_progress\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/deliverables/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"deliverables",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Deliverable",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deliverables/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"deliverables",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Link Board to Deliverable",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"boardId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/deliverables/1/link-board",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"deliverables",
+								"1",
+								"link-board"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Task from Deliverable",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Tarea desde Entregable\",\n\t\"listId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/deliverables/1/create-task",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"deliverables",
+								"1",
+								"create-task"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Get Project Dashboard",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/dashboard/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Weekly Report",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"projectId\": 1,\n\t\"weekStartDate\": \"2026-03-01\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/dashboard/reports",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"reports"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Budget",
+			"item": [
+				{
+					"name": "Get Budget Items by Board",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/budget/project/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"budget",
+								"project",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Budget Item",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"category\": \"Recursos Humanos\",\n\t\"description\": \"Desarrollador Frontend\",\n\t\"estimatedAmount\": 5000,\n\t\"actualAmount\": 0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/budget/project/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"budget",
+								"project",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Budget Summary",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/budget/project/1/summary",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"budget",
+								"project",
+								"1",
+								"summary"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Budget Item",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"actualAmount\": 4500\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/budget/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"budget",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Budget Item",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/budget/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"budget",
 								"1"
 							]
 						}
@@ -232,8 +2563,21 @@
 	"variable": [
 		{
 			"key": "url",
-			"value": "https://fake-trello-api.herokuapp.com/api/v1",
-			"type": "string"
+			"value": "http://localhost:3000/api/v1",
+			"type": "string",
+			"description": "Base URL para rutas V1 (auth, users, boards, lists, cards, me, labels)"
+		},
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api",
+			"type": "string",
+			"description": "Base URL para rutas V2 (documents, milestones, stakeholders, risks, deliverables, dashboard, budget)"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string",
+			"description": "JWT Token - se llena automáticamente al hacer Login"
 		}
 	]
 }
