@@ -26,8 +26,8 @@ import { ConfirmDialogComponent } from '@boards/components/confirm-dialog/confir
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
-  standalone: true, 
-  imports: [ 
+  standalone: true,
+  imports: [
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
@@ -53,6 +53,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   activities: Activity[] = [];
   inputCard = new FormControl<string>('', { nonNullable: true, validators: [Validators.required] });
   inputList = new FormControl<string>('', { nonNullable: true, validators: [Validators.required] });
+  inputListDate = new FormControl<string>('', { nonNullable: true });
   showListForm = false;
   colorBackgrounds = BACKGROUNDS;
   faClock = faClock;
@@ -71,7 +72,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     private formBuilder: FormBuilder,
     private router: Router,
     private toastr: ToastrService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -103,12 +104,14 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   addList() {
     const title = this.inputList.value;
+    const targetDate = this.inputListDate.value; // Capturamos la fecha
     if (this.board) {
-      this.listsService.create({ title, boardId: this.board.id, position: this.boardsService.getPositionNewItem(this.board.lists) })
+      this.listsService.create({ title, targetDate, boardId: this.board.id, position: this.boardsService.getPositionNewItem(this.board.lists) })
         .subscribe(list => {
           this.board?.lists.push({ ...list, cards: [] });
           this.showListForm = false;
           this.inputList.setValue('');
+          this.inputListDate.setValue(''); // Limpiar
         });
     }
   }
@@ -125,16 +128,16 @@ export class BoardComponent implements OnInit, OnDestroy {
       },
     });
     dialogRef.closed.subscribe((result) => {
-    // Si el diálogo se cierra con un resultado 'true' (o cualquier resultado),
-    // recargamos toda la información del tablero.
-    if (result) {
+      // Si el diálogo se cierra con un resultado 'true' (o cualquier resultado),
+      // recargamos toda la información del tablero.
+      if (result) {
         this.getBoard(this.board!.id);
         this.getActivities(this.board!.id);
-    }
-  });
-}
+      }
+    });
+  }
 
-openAssociateDialog() {
+  openAssociateDialog() {
     if (!this.board) return;
 
     const dialogRef = this.dialog.open(AssociateDialogComponent, {
@@ -146,7 +149,7 @@ openAssociateDialog() {
     dialogRef.closed.subscribe(result => {
       if (result) {
         this.getAssociatedBoards(this.board!.id); // Recargamos solo las asociaciones
-      } 
+      }
     });
   }
 
@@ -163,9 +166,9 @@ openAssociateDialog() {
     });
 
     dialogRef.closed.subscribe(result => {
-        if (result) {
-            this.getBoard(this.board!.id); // Reload board to see changes
-        }
+      if (result) {
+        this.getBoard(this.board!.id); // Reload board to see changes
+      }
     });
   }
 
@@ -262,7 +265,7 @@ openAssociateDialog() {
     const dialogRef = this.dialog.open(InputDialogComponent, {
       width: '400px',
       data: {
-        title: 'Renombrar Lista',
+        title: 'Renombrar Fase',
         initialValue: list.title,
         placeholder: 'Nuevo nombre'
       }
@@ -273,7 +276,7 @@ openAssociateDialog() {
         this.listsService.update(list.id, { title: newTitle })
           .subscribe(() => {
             list.title = newTitle;
-            this.toastr.success('Lista renombrada');
+            this.toastr.success('Fase renombrada');
           });
       }
     });
@@ -283,8 +286,8 @@ openAssociateDialog() {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
-        title: 'Eliminar Lista',
-        message: `¿Estás seguro de eliminar la lista "${list.title}"?`,
+        title: 'Eliminar Fase',
+        message: `¿Estás seguro de eliminar la fase "${list.title}"? Todas sus tareas también se eliminarán.`,
         color: 'danger',
         confirmText: 'Eliminar'
       }
@@ -300,7 +303,7 @@ openAssociateDialog() {
                 this.board.lists.splice(listIndex, 1);
               }
             }
-            this.toastr.success('Lista eliminada');
+            this.toastr.success('Fase eliminada');
           });
       }
     });
@@ -345,7 +348,7 @@ openAssociateDialog() {
     }
   }
 
-toggleCardCompletion(card: Card, currentListId: string | number) {
+  toggleCardCompletion(card: Card, currentListId: string | number) {
     const newStatus = !card.isCompleted;
 
     // Si se marca como completada y estamos en un tablero válido
@@ -355,11 +358,11 @@ toggleCardCompletion(card: Card, currentListId: string | number) {
 
       // Si existe la lista "Completado", la lista actual, y no estamos ya en "Completado"
       if (completedList && currentList && completedList.id !== currentListId) {
-        
+
         // 1. Llamada al backend para actualizar estado y mover de lista
-        this.cardsService.update(card.id, { 
-          isCompleted: true, 
-          listId: completedList.id 
+        this.cardsService.update(card.id, {
+          isCompleted: true,
+          listId: completedList.id
         }).subscribe({
           next: () => {
             // 2. Actualizar UI (Mover visualmente la tarjeta)
@@ -367,7 +370,7 @@ toggleCardCompletion(card: Card, currentListId: string | number) {
             if (index > -1) {
               currentList.cards.splice(index, 1); // Quitar de lista actual
             }
-            
+
             card.isCompleted = true;
             // card.listId no existe en la interfaz Card, usamos list si es necesario
             // card.list = completedList; // Opcional si la interfaz lo requiere

@@ -11,18 +11,16 @@ import { Board } from '@models/board.model';
 import { AuthService } from '@services/auth.service';
 import { BoardsService } from '@services/boards.service';
 import { MeService } from '@services/me.service';
-import { DeliverableService } from '../../../../features/deliverable-tracker/services/deliverable.service'; 
-import { RiskService } from '../../../../features/risk-management/services/risk.service'; 
-import { forkJoin } from 'rxjs'; 
+import { RiskService } from '../../../../features/risk-management/services/risk.service';
 
-import { ButtonComponent } from '@shared/components/button/button.component'; 
-import { BoardFormComponent } from '../board-form/board-form.component'; 
+import { ButtonComponent } from '@shared/components/button/button.component';
+import { BoardFormComponent } from '../board-form/board-form.component';
 
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
-  standalone: true, 
-  imports: [ 
+  standalone: true,
+  imports: [
     CommonModule,
     RouterModule,
     OverlayModule,
@@ -43,12 +41,12 @@ export class NavbarComponent implements OnInit {
   isOpenOverlayNotifications = false;
   isOpenOverlayInfo = false;
 
-  notifications: any[] = []; 
+  notifications: any[] = [];
 
   user$ = this.authService.user$;
   ownedBoards: Board[] = [];
   memberBoards: Board[] = [];
-  
+
   boardId: string | null = null;
 
   navBarBackgroundColor: Colors = 'sky';
@@ -60,8 +58,7 @@ export class NavbarComponent implements OnInit {
     private meService: MeService,
     private router: Router,
     private route: ActivatedRoute,
-    private deliverableService: DeliverableService, 
-    private riskService: RiskService 
+    private riskService: RiskService
   ) {
     this.boardsService.backgroundColor$.subscribe(color => {
       this.navBarBackgroundColor = color;
@@ -93,42 +90,11 @@ export class NavbarComponent implements OnInit {
   }
 
   loadNotifications(projectId: string) {
-    forkJoin({
-      deliverables: this.deliverableService.getByProject(projectId),
-      risks: this.riskService.getRisksByProject(projectId)
-    }).subscribe({
-      next: (data) => {
+    this.riskService.getRisksByProject(projectId).subscribe({
+      next: (risks) => {
         const alerts: any[] = [];
-        const now = new Date();
 
-        data.deliverables.forEach(d => {
-          if (d.status !== 'approved') {
-            const dueDate = d.due_date || d.dueDate ? new Date(d.due_date || d.dueDate!) : null;
-            if (dueDate) {
-              const diffDays = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-              
-              if (diffDays < 0) {
-                alerts.push({
-                  id: `d-${d.id}`,
-                  title: `Vencido: ${d.title}`,
-                  message: `Venció hace ${Math.abs(diffDays)} días`,
-                  type: 'error',
-                  time: 'Urgente'
-                });
-              } else if (diffDays <= 3) {
-                alerts.push({
-                  id: `d-${d.id}`,
-                  title: `Próximo a vencer: ${d.title}`,
-                  message: `Vence en ${diffDays} días`,
-                  type: 'warning',
-                  time: 'Atención'
-                });
-              }
-            }
-          }
-        });
-
-        data.risks.forEach(r => {
+        risks.forEach(r => {
           const severity = (r.probability || 0) * (r.impact || 0);
           if (r.status !== 'closed' && r.status !== 'mitigated' && severity >= 15) {
             alerts.push({

@@ -70,6 +70,16 @@ export const createMilestone = async (req, res) => {
       [id, projectId, title, description, targetDate, priority]
     );
 
+    // [SINCRONIZACIÓN KANBAN] - Crear la lista (Fase en el tablero) correspondiente
+    // Determinar la posición de la nueva lista
+    const [posRows] = await pool.query('SELECT MAX(position) as maxPos FROM lists WHERE board_id = ?', [projectId]);
+    const nextPosition = (posRows[0].maxPos || 0) + 65535;
+
+    await pool.query(
+      `INSERT INTO lists (title, position, board_id, milestone_id) VALUES (?, ?, ?, ?)`,
+      [title, nextPosition, projectId, id]
+    );
+
     const [newMilestone] = await pool.query(
       `SELECT 
         id, 
@@ -124,17 +134,17 @@ export const updateMilestone = async (req, res) => {
       values.push(description);
     }
     if (targetDate !== undefined) {
-        // Validate date if it's provided
-        if (targetDate === '' || targetDate === null) {
-             // Depending on DB schema, this might need to be handled. 
-             // If target_date is NOT NULL, we shouldn't allow clearing it unless we have a default.
-             // For now, let's assume we want to update it if it's a valid string.
-             updates.push('target_date = ?');
-             values.push(null); // Or handle as needed
-        } else {
-             updates.push('target_date = ?');
-             values.push(targetDate);
-        }
+      // Validate date if it's provided
+      if (targetDate === '' || targetDate === null) {
+        // Depending on DB schema, this might need to be handled. 
+        // If target_date is NOT NULL, we shouldn't allow clearing it unless we have a default.
+        // For now, let's assume we want to update it if it's a valid string.
+        updates.push('target_date = ?');
+        values.push(null); // Or handle as needed
+      } else {
+        updates.push('target_date = ?');
+        values.push(targetDate);
+      }
     }
     if (status !== undefined) {
       updates.push('status = ?');
@@ -166,6 +176,11 @@ export const updateMilestone = async (req, res) => {
       `UPDATE project_milestones SET ${updates.join(', ')} WHERE id = ?`,
       values
     );
+
+    // [SINCRONIZACIÓN KANBAN] - Si se actualizó el título, actualizar la lista asociada
+    if (title !== undefined) {
+      await pool.query(`UPDATE lists SET title = ? WHERE milestone_id = ?`, [title, id]);
+    }
 
     const [updatedMilestone] = await pool.query(
       `SELECT 
@@ -219,6 +234,9 @@ export const deleteMilestone = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // [SINCRONIZACIÓN KANBAN] - Primero borrar la lista asociada (para no romper posibles FKs si los hay, aunque el cascade debió solucionarlo).
+    await pool.query('DELETE FROM lists WHERE milestone_id = ?', [id]);
+
     await pool.query('DELETE FROM project_milestones WHERE id = ?', [id]);
 
     res.json({
@@ -254,8 +272,8 @@ export const getProjectMetrics = async (req, res) => {
 
     const totalMilestones = milestones.length;
     const completedMilestones = milestones.filter(m => m.status === 'completed').length;
-    const avgProgress = milestones.length > 0 
-      ? milestones.reduce((sum, m) => sum + m.progress_percentage, 0) / milestones.length 
+    const avgProgress = milestones.length > 0
+      ? milestones.reduce((sum, m) => sum + m.progress_percentage, 0) / milestones.length
       : 0;
 
     const metrics = {

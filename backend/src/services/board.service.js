@@ -10,7 +10,7 @@ class BoardService {
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
-      
+
       const objectivesJson = specificObjectives ? JSON.stringify(specificObjectives) : null;
 
       const [boardResult] = await connection.query(
@@ -23,20 +23,15 @@ class BoardService {
         [boardId, userId, 'owner']
       );
 
-      // Crear listas por defecto
-      const defaultLists = ['Pendiente', 'En Progreso', 'Completado'];
-      for (let i = 0; i < defaultLists.length; i++) {
-        await connection.query(
-          'INSERT INTO lists (board_id, title, position) VALUES (?, ?, ?)',
-          [boardId, defaultLists[i], (i + 1) * 1000]
-        );
-      }
+      // NOTA: Se ha quitado la creación automática de las listas 'Pendiente', 
+      // 'En Progreso' y 'Completado' a petición del usuario, para que el 
+      // tablero inicie "en blanco" obligando a definir fases reales.
 
       await connection.commit();
-      return { 
-        id: boardId, 
-        title, 
-        backgroundColor, 
+      return {
+        id: boardId,
+        title,
+        backgroundColor,
         user_id: userId,
         general_objective: generalObjective,
         scope_definition: scopeDefinition,
@@ -64,7 +59,7 @@ class BoardService {
       INNER JOIN board_members bm ON b.id = bm.board_id
       WHERE bm.user_id = ? AND b.user_id != ?
     `, [userId, userId]);
-    
+
     return { owned: ownedBoards, member: memberBoards };
   }
 
@@ -81,8 +76,8 @@ class BoardService {
     board.generalObjective = board.general_objective;
     board.scopeDefinition = board.scope_definition;
     try {
-      board.specificObjectives = typeof board.specific_objectives === 'string' 
-        ? JSON.parse(board.specific_objectives) 
+      board.specificObjectives = typeof board.specific_objectives === 'string'
+        ? JSON.parse(board.specific_objectives)
         : board.specific_objectives;
     } catch (e) {
       board.specificObjectives = [];
@@ -110,12 +105,18 @@ class BoardService {
       budgetActual: realActual,
       projectBenefit: Number(board.project_benefit || 0),
       deviation: realActual - realEstimated,
-      roi: realActual > 0 
-        ? ((Number(board.project_benefit || 0) - realActual) / realActual) * 100 
+      roi: realActual > 0
+        ? ((Number(board.project_benefit || 0) - realActual) / realActual) * 100
         : 0
     };
 
-    const [lists] = await pool.query('SELECT * FROM lists WHERE board_id = ? ORDER BY position', [boardId]);
+    const [lists] = await pool.query(`
+      SELECT l.*, pm.target_date as targetDate 
+      FROM lists l
+      LEFT JOIN project_milestones pm ON l.milestone_id = pm.id
+      WHERE l.board_id = ? 
+      ORDER BY l.position
+    `, [boardId]);
     const [cards] = await pool.query('SELECT id, title, description, position, due_date, list_id, is_completed FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?) ORDER BY position', [boardId]);
     const [members] = await pool.query('SELECT u.id, u.nombre AS name, u.email, u.avatar FROM usuarios u INNER JOIN board_members bm ON u.id = bm.user_id WHERE bm.board_id = ?', [boardId]);
     const [labels] = await pool.query('SELECT l.id, l.name, l.color, cl.card_id FROM labels l INNER JOIN card_labels cl ON l.id = cl.label_id WHERE cl.card_id IN (SELECT id FROM cards WHERE list_id IN (SELECT id FROM lists WHERE board_id = ?))', [boardId]);
@@ -132,7 +133,7 @@ class BoardService {
       labels: labels.filter(label => label.card_id === card.id),
       assignees: assignees.filter(assignee => assignee.card_id === card.id)
     }));
-    
+
     board.lists = lists.map(list => ({
       ...list,
       cards: cardsWithDetails.filter(card => card.list_id === list.id)
@@ -198,7 +199,7 @@ class BoardService {
       throw error;
     }
     const userToInviteId = userToInviteRows[0].id;
-    
+
     await pool.query('INSERT INTO board_members (board_id, user_id) VALUES (?, ?)', [boardId, userToInviteId]);
   }
 
@@ -255,22 +256,22 @@ class BoardService {
   }
 
   async getDashboardData(boardId) {
-  // 1. Reutiliza otro método para obtener todos los detalles del tablero desde la base de datos.
-  const board = await this.getFullBoardDetails(boardId);
+    // 1. Reutiliza otro método para obtener todos los detalles del tablero desde la base de datos.
+    const board = await this.getFullBoardDetails(boardId);
 
-  // 2. Realiza los cálculos necesarios (contar tarjetas, calcular progreso, etc.).
-  let totalCards = 0;
-  let completedCards = 0;
-  // ... lógica de cálculo ...
-  const progress = (completedCards / totalCards) * 100;
+    // 2. Realiza los cálculos necesarios (contar tarjetas, calcular progreso, etc.).
+    let totalCards = 0;
+    let completedCards = 0;
+    // ... lógica de cálculo ...
+    const progress = (completedCards / totalCards) * 100;
 
-  // 3. Devuelve un objeto JSON limpio con los resultados al controlador.
-  return {
-    totalCards,
-    completedCards,
-    progress: Math.round(progress),
-  };
-}
+    // 3. Devuelve un objeto JSON limpio con los resultados al controlador.
+    return {
+      totalCards,
+      completedCards,
+      progress: Math.round(progress),
+    };
+  }
 
 }
 

@@ -1,6 +1,6 @@
 <div class="h-full overflow-auto bg-gray-50 dark:bg-gray-900">
   <!-- Header -->
-  <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 shadow-lg">
+  <div class="bg-blue-600 text-white p-6 shadow-lg">
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-3xl font-bold">📊 Dashboard de Progreso</h1>
@@ -12,48 +12,53 @@
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <span class="text-gray-500">📂</span>
           </div>
-          <select 
-            [ngModel]="selectedProject" 
-            (ngModelChange)="selectProject($event)"
+          <select [ngModel]="selectedProject" (ngModelChange)="selectProject($event)"
             class="appearance-none bg-white text-gray-800 font-bold py-2 pl-10 pr-10 rounded-lg shadow-sm hover:shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all min-w-[220px] border border-transparent hover:border-blue-200">
             <option [ngValue]="null" disabled>Seleccionar Proyecto...</option>
             <option *ngFor="let p of projects" [ngValue]="p">{{ p.title }}</option>
           </select>
-          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-600 group-hover:text-blue-600">
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-600 group-hover:text-blue-600">
             <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
             </svg>
           </div>
         </div>
 
-        <button (click)="createProject()" class="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 shadow-sm hover:shadow transition-all">
+        <button (click)="createProject()"
+          class="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 shadow-sm hover:shadow transition-all">
           ➕ Nuevo Proyecto
         </button>
-        <button *ngIf="selectedProject?.userRole !== 'viewer'" (click)="openReportModal()" class="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50">
+        <button *ngIf="selectedProject?.userRole !== 'viewer'" (click)="openReportModal()"
+          class="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50">
           📋 Generar Reporte Semanal
         </button>
-        
+
         <!-- Export Menu -->
         <div class="relative">
-            <button (click)="toggleExportMenu()" class="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 flex items-center gap-2">
-              📊 Exportar Métricas
-              <span class="text-xs">▼</span>
+          <button (click)="toggleExportMenu()"
+            class="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 flex items-center gap-2">
+            📊 Exportar Métricas
+            <span class="text-xs">▼</span>
+          </button>
+          <div *ngIf="showExportMenu"
+            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50 overflow-hidden text-sm">
+            <button (click)="exportToExcel()"
+              class="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-2 text-gray-700 border-b">
+              📄 Excel (CSV)
             </button>
-            <div *ngIf="showExportMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50 overflow-hidden text-sm">
-                <button (click)="exportToExcel()" class="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-2 text-gray-700 border-b">
-                    📄 Excel (CSV)
-                </button>
-                <button (click)="exportToPDF()" class="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-2 text-gray-700">
-                    🖨️ PDF / Imprimir
-                </button>
-            </div>
+            <button (click)="exportToPDF()"
+              class="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+              🖨️ PDF / Imprimir
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <div class="p-6 space-y-6" *ngIf="dashboardData">
-    
+
     <!-- Alertas Críticas -->
     <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg" *ngIf="dashboardData.alerts.criticalRisks > 0">
       <div class="flex items-start">
@@ -71,7 +76,7 @@
     <!-- KPIs en Tiempo Real -->
     <div>
       <h2 class="text-2xl font-bold mb-4 dark:text-white">🎯 KPIs en Tiempo Real</h2>
-      
+
       <!-- Métricas Principales -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <!-- Progreso General -->
@@ -98,7 +103,8 @@
             {{ dashboardData.progress.deliverables.completed }}/{{ dashboardData.progress.deliverables.total }}
           </div>
           <div class="text-sm text-gray-500 mb-3">
-            {{ (dashboardData.progress.deliverables.completed / dashboardData.progress.deliverables.total * 100) || 0 | number:'1.0-0' }}% completado
+            {{ (dashboardData.progress.deliverables.completed / dashboardData.progress.deliverables.total * 100) || 0 |
+            number:'1.0-0' }}% completado
           </div>
         </div>
 
@@ -132,143 +138,88 @@
       <!-- Timeline Visual -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
         <h3 class="text-xl font-bold mb-6 dark:text-white">📅 Línea de Tiempo de Entregables</h3>
-        
+
         <div class="relative pb-8 overflow-x-auto">
-            <!-- Línea conectora -->
-            <div class="absolute top-4 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 -z-0"></div>
-            
-            <div class="flex justify-between min-w-max gap-8 z-10 relative">
-                <div *ngFor="let item of dashboardData.timeline" class="flex flex-col items-center w-32">
-                    <!-- Punto del hito -->
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs mb-3 z-10 border-4 border-white dark:border-gray-800"
-                         [ngClass]="{
+          <!-- Línea conectora -->
+          <div class="absolute top-4 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 -z-0"></div>
+
+          <div class="flex justify-between min-w-max gap-8 z-10 relative">
+            <div *ngFor="let item of dashboardData.timeline" class="flex flex-col items-center w-32">
+              <!-- Punto del hito -->
+              <div
+                class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs mb-3 z-10 border-4 border-white dark:border-gray-800"
+                [ngClass]="{
                             'bg-green-500': item.progress >= 100,
                             'bg-blue-500': item.progress > 0 && item.progress < 100,
                             'bg-gray-300': item.progress == 0
                          }">
-                        {{ item.progress }}%
-                    </div>
-                    
-                    <!-- Info -->
-                    <div class="text-center">
-                        <div class="text-xs text-gray-500 font-bold mb-1">{{ item.due_date | date:'dd MMM' }}</div>
-                        <div class="text-sm font-bold leading-tight dark:text-white line-clamp-2" title="{{ item.title }}">
-                            {{ item.title }}
-                        </div>
-                        <span class="text-xs px-2 py-0.5 rounded mt-1 inline-block"
-                              [ngClass]="{
+                {{ item.progress }}%
+              </div>
+
+              <!-- Info -->
+              <div class="text-center">
+                <div class="text-xs text-gray-500 font-bold mb-1">{{ item.due_date | date:'dd MMM' }}</div>
+                <div class="text-sm font-bold leading-tight dark:text-white line-clamp-2" title="{{ item.title }}">
+                  {{ item.title }}
+                </div>
+                <span class="text-xs px-2 py-0.5 rounded mt-1 inline-block" [ngClass]="{
                                 'bg-green-100 text-green-800': item.status === 'approved',
                                 'bg-yellow-100 text-yellow-800': item.status === 'review',
                                 'bg-blue-100 text-blue-800': item.status === 'in_progress',
                                 'bg-gray-100 text-gray-800': item.status === 'pending'
                               }">
-                            {{ item.status }}
-                        </span>
-                    </div>
-                </div>
-                
-                <!-- Empty State si no hay entregables -->
-                <div *ngIf="dashboardData.timeline.length === 0" class="w-full text-center py-4 text-gray-500">
-                    No hay entregables programados. ¡Crea uno en el módulo de Entregables!
-                </div>
+                  {{ item.status }}
+                </span>
+              </div>
             </div>
+
+            <!-- Empty State si no hay entregables -->
+            <div *ngIf="dashboardData.timeline.length === 0" class="w-full text-center py-4 text-gray-500">
+              No hay entregables programados. ¡Crea uno en el módulo de Entregables!
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Resumen Presupuestal -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6" *ngIf="budgetSummary">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold dark:text-white">💵 Resumen Presupuestal</h3>
-            <button [routerLink]="['/app/budget', selectedProject.id]" class="text-sm text-blue-600 hover:underline">Ver Detalle</button>
+          <h3 class="text-xl font-bold dark:text-white">💵 Resumen Presupuestal</h3>
+          <button [routerLink]="['/app/budget', selectedProject.id]" class="text-sm text-blue-600 hover:underline">Ver
+            Detalle</button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Aprobado</div>
-                <div class="text-xl font-bold text-gray-900 dark:text-white">{{ budgetSummary.totalApproved | currency:'USD':'symbol':'1.0-0' }}</div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Aprobado</div>
+            <div class="text-xl font-bold text-gray-900 dark:text-white">{{ budgetSummary.totalApproved |
+              currency:'USD':'symbol':'1.0-0' }}</div>
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Ejecutado</div>
+            <div class="text-xl font-bold text-blue-600">{{ budgetSummary.totalExecuted |
+              currency:'USD':'symbol':'1.0-0' }}</div>
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Disponible</div>
+            <div class="text-xl font-bold" [class.text-green-600]="budgetSummary.remaining >= 0"
+              [class.text-red-600]="budgetSummary.remaining < 0">
+              {{ budgetSummary.remaining | currency:'USD':'symbol':'1.0-0' }}
             </div>
-            <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Ejecutado</div>
-                <div class="text-xl font-bold text-blue-600">{{ budgetSummary.totalExecuted | currency:'USD':'symbol':'1.0-0' }}</div>
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">% Ejecución</div>
+            <div class="flex items-center gap-2">
+              <div class="text-xl font-bold text-purple-600">{{ budgetSummary.executionPercentage | number:'1.0-1' }}%
+              </div>
+              <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-purple-600" [style.width.%]="budgetSummary.executionPercentage"></div>
+              </div>
             </div>
-            <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Disponible</div>
-                <div class="text-xl font-bold" [class.text-green-600]="budgetSummary.remaining >= 0" [class.text-red-600]="budgetSummary.remaining < 0">
-                    {{ budgetSummary.remaining | currency:'USD':'symbol':'1.0-0' }}
-                </div>
-            </div>
-            <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">% Ejecución</div>
-                <div class="flex items-center gap-2">
-                    <div class="text-xl font-bold text-purple-600">{{ budgetSummary.executionPercentage | number:'1.0-1' }}%</div>
-                    <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-purple-600" [style.width.%]="budgetSummary.executionPercentage"></div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Métricas Principales -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <!-- Progreso General -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <div class="flex justify-between items-start mb-3">
-            <div class="text-sm font-medium text-gray-500">📈 Progreso General</div>
-            <span class="text-xs px-2 py-1 rounded" [ngClass]="trendColorClass">{{ progressTrend }}</span>
-          </div>
-          <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ dashboardData.progress.percent }}%</div>
-          <div class="text-sm text-gray-500 mb-3">{{ dashboardData.progress.percent }}% completado</div>
-          <div class="text-xs text-green-600 font-bold mb-2">vs IMEVI +60%</div>
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="bg-blue-600 h-2 rounded-full" [style.width.%]="dashboardData.progress.percent"></div>
-          </div>
-          <div class="text-xs text-gray-500 mt-1">Meta: 100%</div>
-        </div>
 
-        <!-- Entregables -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <div class="flex justify-between items-start mb-3">
-            <div class="text-sm font-medium text-gray-500">✅ Entregables</div>
-            <span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded">→Estable</span>
-          </div>
-          <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {{ dashboardData.progress.deliverables.completed }}/{{ dashboardData.progress.deliverables.total }}
-          </div>
-          <div class="text-sm text-gray-500 mb-3">
-            {{ (dashboardData.progress.deliverables.completed / dashboardData.progress.deliverables.total * 100) || 0 | number:'1.0-0' }}% completado
-          </div>
-          <div class="text-xs text-green-600 font-bold">Calidad +30%</div>
-        </div>
-
-        <!-- Riesgos Activos -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <div class="flex justify-between items-start mb-3">
-            <div class="text-sm font-medium text-gray-500">⚠️ Riesgos Activos</div>
-            <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">→Estable</span>
-          </div>
-          <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ dashboardData.alerts.totalRisks }}</div>
-          <div class="text-sm text-gray-500 mb-3">vs Reactivo</div>
-          <div class="text-xs text-green-600 font-bold mb-2">-40%</div>
-          <div class="text-xs text-red-600 font-bold" *ngIf="dashboardData.alerts.criticalRisks > 0">
-            🚨Atención inmediata requerida
-          </div>
-        </div>
-
-        <!-- Reportes Semanales -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <div class="flex justify-between items-start mb-3">
-            <div class="text-sm font-medium text-gray-500">📋 Reportes Semanales</div>
-            <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">↗️Mejorando</span>
-          </div>
-          <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {{ dashboardData.weeklyReports.total }}/{{ getCurrentWeek() }}
-          </div>
-          <div class="text-sm text-gray-500 mb-3">
-            {{ (dashboardData.weeklyReports.total / getCurrentWeek() * 100) || 0 | number:'1.0-0' }}% completado
-          </div>
-          <div class="text-xs text-green-600 font-bold">vs IMEVI +2100%</div>
-        </div>
-      </div>
     </div>
 
     <!-- Weekly Tracking -->
@@ -280,7 +231,8 @@
         </div>
         <div class="flex items-center gap-4">
           <div class="text-center">
-            <div class="text-3xl font-bold" [class.text-green-600]="isReportOnTime" [class.text-red-600]="!isReportOnTime">
+            <div class="text-3xl font-bold" [class.text-green-600]="isReportOnTime"
+              [class.text-red-600]="!isReportOnTime">
               {{ dashboardData.weeklyReports.total }}
             </div>
             <div class="text-xs text-gray-500">Reportes Enviados</div>
@@ -303,21 +255,27 @@
       <div class="mb-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
         <h4 class="text-sm font-bold text-gray-500 mb-3">📅 Mapa de Cumplimiento 2025</h4>
         <div class="flex flex-wrap gap-1">
-            <div *ngFor="let week of weekStatus" 
-                 class="w-8 h-8 rounded flex items-center justify-center text-xs font-bold cursor-help transition-all hover:scale-110"
-                 [title]="'Semana ' + week.week + ': ' + (week.status === 'done' ? 'Enviado' : week.status === 'missed' ? 'No enviado' : 'Actual')"
-                 [ngClass]="{
+          <div *ngFor="let week of weekStatus"
+            class="w-8 h-8 rounded flex items-center justify-center text-xs font-bold cursor-help transition-all hover:scale-110"
+            [title]="'Semana ' + week.week + ': ' + (week.status === 'done' ? 'Enviado' : week.status === 'missed' ? 'No enviado' : 'Actual')"
+            [ngClass]="{
                     'bg-green-500 text-white shadow-sm': week.status === 'done',
                     'bg-red-500 text-white shadow-sm': week.status === 'missed',
                     'bg-blue-500 text-white ring-2 ring-blue-300 ring-offset-1': week.status === 'current'
                  }">
-                {{ week.week }}
-            </div>
+            {{ week.week }}
+          </div>
         </div>
         <div class="flex gap-4 mt-3 text-xs text-gray-500">
-            <div class="flex items-center gap-1"><div class="w-3 h-3 bg-green-500 rounded"></div> Cumplido</div>
-            <div class="flex items-center gap-1"><div class="w-3 h-3 bg-red-500 rounded"></div> Pendiente</div>
-            <div class="flex items-center gap-1"><div class="w-3 h-3 bg-blue-500 rounded"></div> Semana Actual</div>
+          <div class="flex items-center gap-1">
+            <div class="w-3 h-3 bg-green-500 rounded"></div> Cumplido
+          </div>
+          <div class="flex items-center gap-1">
+            <div class="w-3 h-3 bg-red-500 rounded"></div> Pendiente
+          </div>
+          <div class="flex items-center gap-1">
+            <div class="w-3 h-3 bg-blue-500 rounded"></div> Semana Actual
+          </div>
         </div>
       </div>
 
@@ -341,15 +299,16 @@
         </div>
       </div>
 
-      <button *ngIf="selectedProject?.userRole !== 'viewer'" (click)="openReportModal()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 mb-6">
+      <button *ngIf="selectedProject?.userRole !== 'viewer'" (click)="openReportModal()"
+        class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 mb-6">
         📋 Crear Reporte Semanal
       </button>
 
       <!-- Reportes Recientes -->
       <div class="space-y-3">
         <h4 class="font-bold dark:text-white">📊 Reportes Recientes</h4>
-        <div *ngFor="let report of dashboardData.weeklyReports.history.slice(0, 3)" 
-             class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+        <div *ngFor="let report of dashboardData.weeklyReports.history.slice(0, 3)"
+          class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
           <div class="flex justify-between items-start mb-2">
             <div>
               <div class="font-bold dark:text-white">Semana {{ report.week_number }} - {{ report.year }}</div>
@@ -382,41 +341,37 @@
       </h2>
       <p class="text-sm text-gray-500 mt-1" *ngIf="modalMode === 'create'">Semana {{ getCurrentWeek() }} - Año 2025</p>
     </div>
-    
+
     <!-- Contenido Scrolleable -->
     <div class="p-6 space-y-4 overflow-y-auto flex-1">
       <div>
         <label class="block text-sm font-medium mb-1 dark:text-gray-300">✅ Logros de la Semana</label>
-        <textarea [(ngModel)]="newReport.achievements" 
-                  [disabled]="modalMode === 'view'"
-                  class="w-full p-3 border rounded dark:bg-gray-700 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800" 
-                  rows="4"
-                  placeholder="Describe los logros principales..."></textarea>
+        <textarea [(ngModel)]="newReport.achievements" [disabled]="modalMode === 'view'"
+          class="w-full p-3 border rounded dark:bg-gray-700 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+          rows="4" placeholder="Describe los logros principales..."></textarea>
       </div>
       <div>
         <label class="block text-sm font-medium mb-1 dark:text-gray-300">⚠️ Desafíos Encontrados</label>
-        <textarea [(ngModel)]="newReport.challenges" 
-                  [disabled]="modalMode === 'view'"
-                  class="w-full p-3 border rounded dark:bg-gray-700 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800" 
-                  rows="4"
-                  placeholder="Describe los desafíos y obstáculos..."></textarea>
+        <textarea [(ngModel)]="newReport.challenges" [disabled]="modalMode === 'view'"
+          class="w-full p-3 border rounded dark:bg-gray-700 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+          rows="4" placeholder="Describe los desafíos y obstáculos..."></textarea>
       </div>
       <div>
         <label class="block text-sm font-medium mb-1 dark:text-gray-300">🎯 Metas para la Próxima Semana</label>
-        <textarea [(ngModel)]="newReport.goals" 
-                  [disabled]="modalMode === 'view'"
-                  class="w-full p-3 border rounded dark:bg-gray-700 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800" 
-                  rows="4"
-                  placeholder="Define las metas para la siguiente semana..."></textarea>
+        <textarea [(ngModel)]="newReport.goals" [disabled]="modalMode === 'view'"
+          class="w-full p-3 border rounded dark:bg-gray-700 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+          rows="4" placeholder="Define las metas para la siguiente semana..."></textarea>
       </div>
     </div>
 
     <!-- Footer Fijo -->
-    <div class="p-6 border-t dark:border-gray-700 flex justify-end gap-3 flex-shrink-0 bg-gray-50 dark:bg-gray-900 rounded-b-lg">
+    <div
+      class="p-6 border-t dark:border-gray-700 flex justify-end gap-3 flex-shrink-0 bg-gray-50 dark:bg-gray-900 rounded-b-lg">
       <button (click)="closeReportModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">
         {{ modalMode === 'create' ? 'Cancelar' : 'Cerrar' }}
       </button>
-      <button *ngIf="modalMode === 'create'" (click)="submitReport()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg hover:shadow-xl transform transition hover:-translate-y-0.5">
+      <button *ngIf="modalMode === 'create'" (click)="submitReport()"
+        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg hover:shadow-xl transform transition hover:-translate-y-0.5">
         📤 Enviar Reporte
       </button>
     </div>

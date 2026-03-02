@@ -3,12 +3,12 @@ import pool from '../config/database.js';
 
 
 class ListService {
-  async createList({ title, position, boardId }) {
+  async createList({ title, position, boardId, milestoneId }) {
     const [result] = await pool.query(
-      'INSERT INTO lists (title, position, board_id) VALUES (?, ?, ?)',
-      [title, position, boardId]
+      'INSERT INTO lists (title, position, board_id, milestone_id) VALUES (?, ?, ?, ?)',
+      [title, position, boardId, milestoneId || null]
     );
-    return { id: result.insertId, title, position, board_id: boardId };
+    return { id: result.insertId, title, position, board_id: boardId, milestone_id: milestoneId };
   }
 
   async updateList(listId, updates) {

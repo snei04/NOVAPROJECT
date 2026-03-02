@@ -6,8 +6,16 @@ import DeliverableService from '../services/deliverable.service.js';
 // --- CREAR TARJETA (Solo para Dueños) ---
 export const createCard = async (req, res) => {
   try {
-    const { listId } = req.body;
+    const { listId, title } = req.body;
     const userId = req.user.id;
+
+    // Validación estricta: Una tarea NUNCA puede existir sin una fase (listId)
+    if (!listId) {
+      return res.status(400).json({ message: 'Error de validación: Cada tarea debe pertenecer obligatoriamente a una Fase del proyecto.' });
+    }
+    if (!title) {
+      return res.status(400).json({ message: 'Error de validación: El título de la tarea es requerido.' });
+    }
 
     const [permissionRows] = await pool.query(`
       SELECT b.id
@@ -48,25 +56,25 @@ export const updateCard = async (req, res) => {
     // --- LÓGICA DE PERMISOS ---
     if (userRole !== 'owner') {
       console.log("--- [DEBUG] El usuario no es 'owner'. Verificando permisos de miembro...");
-      
+
       // Eliminamos boardId si viene en los updates para evitar errores y chequeos innecesarios
       delete updates.boardId;
 
       // Lista RESTRINGIDA de campos permitidos para miembros
-      const allowedUpdatesForMember = ['description', 'isCompleted']; 
+      const allowedUpdatesForMember = ['description', 'isCompleted'];
       const requestedUpdates = Object.keys(updates);
-  
+
 
       console.log(`--- [DEBUG] Campos permitidos para miembros: [${allowedUpdatesForMember.join(', ')}]`);
       console.log(`--- [DEBUG] Campos solicitados: [${requestedUpdates.join(', ')}]`);
 
       const isUpdateAllowed = requestedUpdates.every(key => allowedUpdatesForMember.includes(key));
-      
+
       if (!isUpdateAllowed) {
         console.log('--- [DEBUG] ACCESO DENEGADO: El miembro intenta actualizar campos no permitidos.');
         return res.status(403).json({ message: 'Como miembro, solo puedes actualizar la descripción y marcar como completado.' });
       }
-      
+
       console.log('--- [DEBUG] PERMISO CONCEDIDO: El miembro solo está actualizando campos permitidos.');
     } else {
       // Si es owner, también quitamos boardId por seguridad de DB
@@ -77,7 +85,7 @@ export const updateCard = async (req, res) => {
 
     await CardService.updateCard(id, updates, user);
     console.log('--- [DEBUG] CardService.updateCard ejecutado exitosamente.');
-    
+
     res.status(200).json({ message: 'Tarjeta actualizada exitosamente' });
 
   } catch (error) {
@@ -88,11 +96,11 @@ export const updateCard = async (req, res) => {
 
 // --- BORRAR TARJETA (Solo para Dueños) ---
 export const deleteCard = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.id;
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
 
-        const [permissionRows] = await pool.query(`
+    const [permissionRows] = await pool.query(`
             SELECT b.user_id, b.id as board_id
             FROM cards c
             JOIN lists l ON c.list_id = l.id
@@ -100,25 +108,25 @@ export const deleteCard = async (req, res) => {
             WHERE c.id = ?
         `, [id]);
 
-        if (permissionRows.length === 0) {
-            return res.status(404).json({ message: 'Tarjeta no encontrada.' });
-        }
-
-        if (permissionRows[0].user_id !== userId) {
-            return res.status(403).json({ message: 'Solo los dueños del tablero pueden eliminar tarjetas.' });
-        }
-        
-        const boardId = permissionRows[0].board_id;
-        await pool.query('DELETE FROM cards WHERE id = ?', [id]);
-        
-        // Check if deleting this card completed the board
-        await DeliverableService.checkAndCompleteDeliverables(boardId);
-        
-        res.status(200).json({ message: 'Tarjeta eliminada exitosamente' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error interno del servidor' });
+    if (permissionRows.length === 0) {
+      return res.status(404).json({ message: 'Tarjeta no encontrada.' });
     }
+
+    if (permissionRows[0].user_id !== userId) {
+      return res.status(403).json({ message: 'Solo los dueños del tablero pueden eliminar tarjetas.' });
+    }
+
+    const boardId = permissionRows[0].board_id;
+    await pool.query('DELETE FROM cards WHERE id = ?', [id]);
+
+    // Check if deleting this card completed the board
+    await DeliverableService.checkAndCompleteDeliverables(boardId);
+
+    res.status(200).json({ message: 'Tarjeta eliminada exitosamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
 };
 
 export const assignMemberToCard = async (req, res) => {
@@ -149,19 +157,19 @@ export const assignMemberToCard = async (req, res) => {
 
     // Lógica de permisos: SOLO EL DUEÑO PUEDE ASIGNAR
     if (requesterId !== ownerId) {
-       // Verificamos si es "owner" en board_members también
-       const [memberRoleRows] = await pool.query('SELECT role FROM board_members WHERE board_id = ? AND user_id = ?', [boardId, requesterId]);
-       if (memberRoleRows.length === 0 || memberRoleRows[0].role !== 'owner') {
-          return res.status(403).json({ message: 'Solo el dueño del tablero puede asignar miembros a las tarjetas.' });
-       }
+      // Verificamos si es "owner" en board_members también
+      const [memberRoleRows] = await pool.query('SELECT role FROM board_members WHERE board_id = ? AND user_id = ?', [boardId, requesterId]);
+      if (memberRoleRows.length === 0 || memberRoleRows[0].role !== 'owner') {
+        return res.status(403).json({ message: 'Solo el dueño del tablero puede asignar miembros a las tarjetas.' });
+      }
     }
 
     // Verificamos que el usuario a asignar sea miembro del tablero
     const [isMemberRows] = await pool.query('SELECT user_id FROM board_members WHERE board_id = ? AND user_id = ?', [boardId, userIdToAssign]);
     const isOwnerAssignee = (userIdToAssign === ownerId); // El dueño siempre es miembro implícito
-    
+
     if (isMemberRows.length === 0 && !isOwnerAssignee) {
-        return res.status(400).json({ message: 'El usuario debe ser miembro del tablero para ser asignado a una tarjeta.' });
+      return res.status(400).json({ message: 'El usuario debe ser miembro del tablero para ser asignado a una tarjeta.' });
     }
 
     // Asignar miembro
@@ -191,13 +199,13 @@ export const assignMemberToCard = async (req, res) => {
 
 // Quitar un miembro de una tarjeta
 export const removeMemberFromCard = async (req, res) => {
-    const { cardId, userIdToRemove } = req.params;
-    const requesterId = req.user.id;
+  const { cardId, userIdToRemove } = req.params;
+  const requesterId = req.user.id;
 
-    console.log('\n--- [DEBUG] INICIANDO ELIMINACIÓN DE ASIGNACIÓN ---');
-    console.log(`- Datos recibidos: cardId=${cardId}, userIdToRemove=${userIdToRemove}, requesterId=${requesterId}`);
+  console.log('\n--- [DEBUG] INICIANDO ELIMINACIÓN DE ASIGNACIÓN ---');
+  console.log(`- Datos recibidos: cardId=${cardId}, userIdToRemove=${userIdToRemove}, requesterId=${requesterId}`);
 
-     try {
+  try {
     const [cardData] = await pool.query('SELECT l.board_id, b.user_id as ownerId FROM cards c JOIN lists l ON c.list_id = l.id JOIN boards b ON l.board_id = b.id WHERE c.id = ?', [cardId]);
     if (cardData.length === 0) {
       console.log(`- [DEBUG] FALLO: No se encontró la tarjeta con id ${cardId}.`);
@@ -206,16 +214,16 @@ export const removeMemberFromCard = async (req, res) => {
     const boardId = cardData[0].board_id;
     const ownerId = cardData[0].ownerId;
     console.log(`- [DEBUG] La tarjeta pertenece al tablero (boardId): ${boardId}`);
-    
+
     // Lógica de permisos: SOLO EL DUEÑO PUEDE QUITAR ASIGNACIÓN
     let isAuthorized = false;
     if (requesterId === ownerId) {
-        isAuthorized = true;
+      isAuthorized = true;
     } else {
-        const [memberRoleRows] = await pool.query('SELECT role FROM board_members WHERE board_id = ? AND user_id = ?', [boardId, requesterId]);
-        if (memberRoleRows.length > 0 && memberRoleRows[0].role === 'owner') {
-            isAuthorized = true;
-        }
+      const [memberRoleRows] = await pool.query('SELECT role FROM board_members WHERE board_id = ? AND user_id = ?', [boardId, requesterId]);
+      if (memberRoleRows.length > 0 && memberRoleRows[0].role === 'owner') {
+        isAuthorized = true;
+      }
     }
 
     if (!isAuthorized) {
@@ -231,7 +239,7 @@ export const removeMemberFromCard = async (req, res) => {
     } else {
       res.status(404).json({ message: 'La asignación no existía.' });
     }
-    
+
   } catch (error) {
     console.error("--- [DEBUG] ERROR INESPERADO ---", error);
     res.status(500).json({ message: 'Error interno del servidor.' });
